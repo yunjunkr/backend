@@ -1,4 +1,4 @@
-package com.zoopick.server.util;
+package com.zoopick.server.security;
 
 import com.zoopick.server.repository.UserRepository;
 import com.zoopick.server.service.TokenValidationService;
@@ -34,8 +34,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String email = jwtUtil.extractEmail(token);
             userRepository.findBySchoolEmail(email).ifPresent(user -> {
                 request.setAttribute("accessToken", token);
+                UserPrincipal principal = new UserPrincipal(
+                        user.getId(),
+                        user.getSchoolEmail(),
+                        user.getNickname(),
+                        user.getRole()
+                );
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        email, null, user.getAuthorities()
+                        principal, null, user.getAuthorities()
                 );
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);

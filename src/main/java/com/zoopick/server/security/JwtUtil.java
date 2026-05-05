@@ -1,4 +1,4 @@
-package com.zoopick.server.util;
+package com.zoopick.server.security;
 
 import com.zoopick.server.exception.AccessTokenException;
 import io.jsonwebtoken.Claims;

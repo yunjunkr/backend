@@ -1,7 +1,7 @@
 package com.zoopick.server.service;
 
 import com.zoopick.server.exception.AccessTokenException;
-import com.zoopick.server.util.JwtUtil;
+import com.zoopick.server.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.data.redis.core.StringRedisTemplate;

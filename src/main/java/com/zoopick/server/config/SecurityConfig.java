@@ -1,6 +1,6 @@
 package com.zoopick.server.config;
 
-import com.zoopick.server.util.JwtAuthenticationFilter;
+import com.zoopick.server.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
