@@ -8,6 +8,6 @@ import org.springframework.security.core.AuthenticatedPrincipal;
 public record UserPrincipal(Long id, String email, String nickname, Role role) implements AuthenticatedPrincipal {
     @Override
     public String getName() {
-        return nickname;
+        return email;
     }
 }
