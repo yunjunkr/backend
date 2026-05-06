@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict hrrnEF8XRbhHz0qwZU3BxClbCd3RBTK3ECiUV2gVArs6wXqa7OdEOdgjc9jFHHw
+\restrict zaaZzBLaYPZ6eE7GVrQDofgIBJxSzOfI7E2VSnwefDtdveDFbB7ctnhSUSWhGIv
 
 -- Dumped from database version 18.3
 -- Dumped by pg_dump version 18.3
@@ -869,7 +869,6 @@ CREATE TABLE zoopick.users (
                                grade character varying(20) NOT NULL,
                                fcm_token character varying(512),
                                role zoopick.user_role DEFAULT 'STUDENT'::zoopick.user_role NOT NULL,
-                               profile_image_url character varying(500),
                                created_at timestamp without time zone DEFAULT now() NOT NULL,
                                updated_at timestamp without time zone
 );
@@ -1113,6 +1112,7 @@ COPY zoopick.item_posts (id, title, description, item_id, user_id, created_at) F
 --
 
 COPY zoopick.items (id, reporter_id, type, status, category, color, embedding, reported_building_id, location_name, reported_at, theft_suspected_at, returned_at, image_url, created_at, updated_at) FROM stdin;
+0	1	LOST	REPORTED	\N	\N	\N	1	5공학관 어디	2026-05-06 01:11:08.911	2026-05-06 01:11:31.039	2026-05-06 01:11:33.44	\N	2026-05-06 01:11:49.298	\N
 \.
 
 
@@ -1167,9 +1167,10 @@ COPY zoopick.timetables (id, user_id, course_id, enrolled_at) FROM stdin;
 -- Data for Name: users; Type: TABLE DATA; Schema: zoopick; Owner: postgres
 --
 
-COPY zoopick.users (id, school_email, password, nickname, department, grade, fcm_token, role, profile_image_url, created_at, updated_at) FROM stdin;
-1	test@mju.ac.kr	$2a$10$dummyhashedpassword1234567890	테스트학생	컴퓨터공학과	4학년	\N	STUDENT	\N	2026-05-03 20:49:32.934927	\N
-2	admin@mju.ac.kr	$2a$10$dummyhashedpassword0987654321	관리자	시스템운영	0학년	\N	ADMIN	\N	2026-05-03 20:49:32.934927	\N
+COPY zoopick.users (id, school_email, password, nickname, department, grade, fcm_token, role, created_at, updated_at) FROM stdin;
+1	test@mju.ac.kr	$2a$10$dummyhashedpassword1234567890	테스트학생	컴퓨터공학과	4학년	\N	STUDENT	2026-05-03 20:49:32.934927	\N
+2	admin@mju.ac.kr	$2a$10$dummyhashedpassword0987654321	관리자	시스템운영	0학년	\N	ADMIN	2026-05-03 20:49:32.934927	\N
+5	soshat@mju.ac.kr	$2a$10$5ljJyHzJb8xGdFTfeMkV4exQ0xgNR73.YAFIPtGwmBrCShbVCfyfq	테스트1	컴퓨터공학전공	4학년	\N	STUDENT	2026-05-07 00:56:25.441323	\N
 \.
 
 
@@ -1282,7 +1283,7 @@ SELECT pg_catalog.setval('zoopick.timetables_id_seq', 1, false);
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: zoopick; Owner: postgres
 --
 
-SELECT pg_catalog.setval('zoopick.users_id_seq', 2, true);
+SELECT pg_catalog.setval('zoopick.users_id_seq', 5, true);
 
 
 --
@@ -1867,5 +1868,5 @@ ALTER TABLE ONLY zoopick.cctv_videos
 -- PostgreSQL database dump complete
 --
 
-\unrestrict hrrnEF8XRbhHz0qwZU3BxClbCd3RBTK3ECiUV2gVArs6wXqa7OdEOdgjc9jFHHw
+\unrestrict zaaZzBLaYPZ6eE7GVrQDofgIBJxSzOfI7E2VSnwefDtdveDFbB7ctnhSUSWhGIv
 
