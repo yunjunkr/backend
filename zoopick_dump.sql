@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict iy4NXqJLE04WaVbAXkFSynTIPUX1VFkLGywRajAcxAxWEWglDsme3gweu4uml74
+\restrict knEphJBtBaU0XtNnamEd80jQUqm15GSDwBEkbzT3sCe6eNhHkym4htiMgY1Pc8T
 
 -- Dumped from database version 18.3
 -- Dumped by pg_dump version 18.3
@@ -581,7 +581,11 @@ CREATE TABLE zoopick.item_matches (
                                       id bigint NOT NULL,
                                       lost_item_id bigint NOT NULL,
                                       found_item_id bigint NOT NULL,
-                                      score real NOT NULL,
+                                      score_category real,
+                                      score_visual real,
+                                      score_spatial real,
+                                      score_temporal real,
+                                      score_total real NOT NULL,
                                       status zoopick.match_status DEFAULT 'CANDIDATE'::zoopick.match_status NOT NULL,
                                       created_at timestamp without time zone DEFAULT now() NOT NULL,
                                       updated_at timestamp without time zone
@@ -1042,12 +1046,11 @@ ALTER TABLE ONLY zoopick.users ALTER COLUMN id SET DEFAULT nextval('zoopick.user
 --
 
 COPY zoopick.buildings (id, name, code, latitude, longitude) FROM stdin;
-1	??怨듯븰愿	ENG5	37.2236	127.1878
-2	??怨듯븰愿	ENG1	37.224	127.1882
-3	?⑤컯愿	HBK	37.2233	127.1872
-4	李⑥꽭?怨쇳븰愿	NSCI	37.2228	127.1885
-5	李쎌“?덉닠愿	ART	37.1232	127.321321
-6	??怨듯븰愿	ENG2	37.2245	127.189
+1	??怨듯븰愿	ENG5	37.221984	127.187616
+2	??怨듯븰愿	ENG2	37.221523	127.186795
+3	??怨듯븰愿	ENG1	37.222482	127.187167
+4	?⑤컯愿	HBK	37.221122	127.18861
+5	李쎌“?덉닠愿	ART	37.222838	127.189279
 \.
 
 
@@ -1104,18 +1107,31 @@ COPY zoopick.chat_rooms (id, item_id, owner_id, finder_id, status, resolved_by, 
 --
 
 COPY zoopick.courses (id, course_name, room_id, year, semester, day_of_week, start_time, end_time) FROM stdin;
-1	罹≪뒪?ㅻ뵒?먯씤1	1	2026	1	MON	09:00:00	12:00:00
-2	?댁쁺泥댁젣	2	2026	1	MON	13:30:00	15:00:00
-3	而댄벂?곕꽕?몄썙??3	2026	1	TUE	10:30:00	12:00:00
-4	?멸났吏?κ컻濡?1	2026	1	WED	13:30:00	16:30:00
-5	?곗씠?곕쿋?댁뒪	2	2026	1	THU	09:00:00	10:30:00
-6	?뚰봽?몄썾?닿났??3	2026	1	FRI	13:30:00	15:00:00
-7	?뚭퀬由ъ쬁	1	2026	1	MON	15:00:00	16:30:00
-8	?먮즺援ъ“	2	2026	1	TUE	13:30:00	15:00:00
-9	誘몄쟻遺꾪븰	6	2026	1	MON	09:00:00	10:30:00
-10	?쇰컲臾쇰━	5	2026	1	TUE	15:00:00	16:30:00
-11	援먯뼇?곸뼱	6	2026	1	WED	13:30:00	15:00:00
-12	??숆뎅??4	2026	1	FRI	09:00:00	10:30:00
+1	4李⑥궛?낇쁺紐낃낵誘몃옒?ы쉶吏꾨줈?좏깮	1	2026	1	MON	13:00:00	14:50:00
+2	怨듯븰?섑븰1	2	2026	1	FRI	09:00:00	11:50:00
+3	湲?곌린	3	2026	1	MON	13:00:00	14:50:00
+4	湲?곌린	3	2026	1	WED	14:00:00	14:50:00
+5	?섍꼍怨쇱씤媛?4	2026	1	TUE	14:00:00	14:50:00
+6	?듦퀎??5	2026	1	MON	10:00:00	12:50:00
+7	?쇰컲?앸Ъ??6	2026	1	THU	13:00:00	14:50:00
+8	4李⑥궛?낇쁺紐낃낵誘몃옒?ы쉶吏꾨줈?좏깮	7	2026	1	WED	10:00:00	11:50:00
+9	而댄벂?고븯?쒖썾??7	2026	1	TUE	14:00:00	16:50:00
+10	罹≪뒪?ㅻ뵒?먯씤	8	2026	1	MON	13:00:00	15:50:00
+11	?댁쁺泥댁젣	9	2026	1	MON	10:00:00	11:50:00
+12	?댁쁺泥댁젣	9	2026	1	WED	10:00:00	10:50:00
+13	怨듯븰?섑븰1	9	2026	1	TUE	13:00:00	14:50:00
+14	怨듯븰?섑븰1	9	2026	1	THU	13:00:00	13:50:00
+15	?쒖뒪?쒗겢?쇱슦?쒕낫??10	2026	1	THU	13:00:00	15:50:00
+16	湲곌퀎?숈뒿	10	2026	1	MON	13:00:00	14:50:00
+17	湲곌퀎?숈뒿	10	2026	1	WED	13:00:00	13:50:00
+18	諛쒗몴??좎쓽	11	2026	1	MON	14:00:00	15:50:00
+19	諛쒗몴??좎쓽	11	2026	1	WED	14:00:00	15:50:00
+20	誘몄쟻遺꾪븰1	12	2026	1	MON	11:00:00	12:50:00
+21	?곸뼱1	13	2026	1	TUE	11:00:00	11:50:00
+22	?곸뼱1	13	2026	1	THU	11:00:00	11:50:00
+23	?멸퀎?곹솕??14	2026	1	TUE	11:00:00	13:50:00
+24	援먯뼇諛붾몣	15	2026	1	TUE	13:00:00	14:50:00
+25	裕ㅼ?而ш컻濡?16	2026	1	FRI	13:00:00	15:50:00
 \.
 
 
@@ -1123,7 +1139,7 @@ COPY zoopick.courses (id, course_name, room_id, year, semester, day_of_week, sta
 -- Data for Name: item_matches; Type: TABLE DATA; Schema: zoopick; Owner: postgres
 --
 
-COPY zoopick.item_matches (id, lost_item_id, found_item_id, score, status, created_at, updated_at) FROM stdin;
+COPY zoopick.item_matches (id, lost_item_id, found_item_id, score_category, score_visual, score_spatial, score_temporal, score_total, status, created_at, updated_at) FROM stdin;
 \.
 
 
@@ -1132,17 +1148,6 @@ COPY zoopick.item_matches (id, lost_item_id, found_item_id, score, status, creat
 --
 
 COPY zoopick.item_posts (id, title, description, item_id, user_id, created_at) FROM stdin;
-1	寃??媛諛?5怨듯븰愿?먯꽌 二쇱썱?듬땲??1	5	2026-05-07 21:06:26.535971
-2	寃????ш컖媛諛?5怨?4痢?2	5	2026-05-07 21:39:00.293706
-3	踰좎씠吏 ?꾪넻	5怨?3	5	2026-05-07 21:40:35.781513
-4	?꾪넻 踰좎씠吏	踰좎씠吏	4	5	2026-05-07 21:57:53.143895
-5	留쏇룿	?꾩삤	5	5	2026-05-07 22:33:05.275236
-6	?먮Ъ????6	5	2026-05-07 22:48:51.087485
-7	寃? 媛諛?寃?媛諛⑹엫??7	5	2026-05-08 01:32:43.018062
-8	?ъ떎? 怨좎뼇?댁엫	?곕━吏?怨좎뼇??洹?ъ?	8	5	2026-05-08 01:47:45.551963
-9	寃???댁뼱???댁뼅?몄슦	9	5	2026-05-08 02:21:46.624059
-10	?ㅻ뱶????10	5	2026-05-08 16:56:14.533686
-11	媛쒕뀗???껋뼱踰꾨졇?듬땲??萸?11	5	2026-05-08 16:57:06.344456
 \.
 
 
@@ -1151,18 +1156,6 @@ COPY zoopick.item_posts (id, title, description, item_id, user_id, created_at) F
 --
 
 COPY zoopick.items (id, reporter_id, type, status, category, color, embedding, reported_building_id, location_name, reported_at, theft_suspected_at, returned_at, image_url, created_at, updated_at) FROM stdin;
-0	1	LOST	REPORTED	\N	\N	\N	1	5怨듯븰愿 ?대뵒	2026-05-06 01:11:08.911	2026-05-06 01:11:31.039	2026-05-06 01:11:33.44	\N	2026-05-06 01:11:49.298	\N
-1	5	FOUND	REPORTED	\N	\N	\N	1	4痢?5047	2026-05-07 21:06:26.463101	\N	\N	\N	2026-05-07 21:06:26.463101	2026-05-07 21:06:26.463101
-2	5	FOUND	REPORTED	\N	\N	\N	1	5407	2026-05-07 21:39:00.286687	\N	\N	\N	2026-05-07 21:39:00.286687	2026-05-07 21:39:00.286687
-3	5	FOUND	REPORTED	\N	\N	\N	1	4痢?2026-05-07 21:40:35.78051	\N	\N	\N	2026-05-07 21:40:35.78051	2026-05-07 21:40:35.78051
-4	5	FOUND	REPORTED	\N	\N	\N	1	??醫 ?섎씪	2026-05-07 21:57:53.126678	\N	\N	/images/item/33fd817a-d8c3-48ba-8e35-83ef8c517a82.jpg	2026-05-07 21:57:53.126678	2026-05-07 21:57:53.126678
-5	5	FOUND	REPORTED	\N	\N	\N	1	醫 ?섎씪 ?쒕컻	2026-05-07 22:33:05.258713	\N	\N	/images/item/4ac2a45c-7f1e-4275-96e8-c15be3a05fa6.jpg	2026-05-07 22:33:05.258713	2026-05-07 22:33:05.258713
-6	5	FOUND	REPORTED	SMARTPHONE	WHITE	\N	1	4痢?2026-05-07 13:48:12.587	\N	\N	/images/item/fbe58942-8350-4755-a8a8-dafe5e0990d9.jpg	2026-05-07 22:48:51.068954	2026-05-07 22:48:51.068954
-7	5	FOUND	REPORTED	BAG	BLACK	\N	1	4痢?2026-05-07 16:32:12.197	\N	\N	/images/item/bb478d3c-45a0-48c8-9a10-346b727f743c.jpg	2026-05-08 01:32:42.991555	2026-05-08 01:32:42.991555
-8	5	FOUND	REPORTED	PLUSH_TOY	WHITE	\N	3	??2026-05-07 16:46:37.357	\N	\N	/images/item/c4f9dab6-ead8-4ec5-9a4b-4207a8410b8f.jpeg	2026-05-08 01:47:45.548962	2026-05-08 01:47:45.548962
-9	5	FOUND	REPORTED	EARPHONES	BLACK	\N	3		2026-05-07 17:20:57.453	\N	\N	/images/item/0fa46e20-9f07-4c50-bbcb-410586452943.jpeg	2026-05-08 02:21:46.621056	2026-05-08 02:21:46.621056
-10	5	FOUND	REPORTED	EARPHONES	BLACK	\N	1		2026-05-08 07:55:46.582	\N	\N	/images/item/f3a6330b-2d86-4ba3-a104-9ec7bd66c39b.jpeg	2026-05-08 16:56:14.504043	2026-05-08 16:56:14.504043
-11	5	LOST	REPORTED	STUDENT_ID_CARD	WHITE	\N	2	??2026-05-08 07:56:35.035	\N	\N	/images/item/fbc6462a-7b09-450d-a9b6-ae73cb6db89d.png	2026-05-08 16:57:06.343457	2026-05-08 16:57:06.343457
 \.
 
 
@@ -1179,7 +1172,6 @@ COPY zoopick.locker_commands (id, locker_id, command, status, issued_by, created
 --
 
 COPY zoopick.lockers (id, status, current_item_id) FROM stdin;
-1	EMPTY	\N
 \.
 
 
@@ -1196,12 +1188,22 @@ COPY zoopick.notifications (id, user_id, type, payload, read_at, created_at) FRO
 --
 
 COPY zoopick.rooms (id, building_id, name) FROM stdin;
-1	1	Y5407
-2	1	Y5301
-3	2	Y9029
-4	3	Y22217
-5	4	?媛뺣떦
-6	3	?대엺??
+1	3	Y106
+2	3	Y123
+3	3	Y117
+4	2	Y8110
+5	2	Y8107
+6	2	Y8114
+7	1	Y5420
+8	1	Y5441
+9	1	Y5411
+10	1	Y5445
+11	4	Y9501
+12	4	Y9508
+13	4	Y9515
+14	5	Y2237
+15	5	Y2259
+16	5	Y2119
 \.
 
 
@@ -1236,7 +1238,7 @@ COPY zoopick.users (id, school_email, password, nickname, department, grade, fcm
 -- Name: buildings_id_seq; Type: SEQUENCE SET; Schema: zoopick; Owner: postgres
 --
 
-SELECT pg_catalog.setval('zoopick.buildings_id_seq', 6, true);
+SELECT pg_catalog.setval('zoopick.buildings_id_seq', 5, true);
 
 
 --
@@ -1285,7 +1287,7 @@ SELECT pg_catalog.setval('zoopick.chat_rooms_id_seq', 1, false);
 -- Name: courses_id_seq; Type: SEQUENCE SET; Schema: zoopick; Owner: postgres
 --
 
-SELECT pg_catalog.setval('zoopick.courses_id_seq', 12, true);
+SELECT pg_catalog.setval('zoopick.courses_id_seq', 25, true);
 
 
 --
@@ -1299,14 +1301,14 @@ SELECT pg_catalog.setval('zoopick.item_matches_id_seq', 1, false);
 -- Name: item_posts_id_seq; Type: SEQUENCE SET; Schema: zoopick; Owner: postgres
 --
 
-SELECT pg_catalog.setval('zoopick.item_posts_id_seq', 11, true);
+SELECT pg_catalog.setval('zoopick.item_posts_id_seq', 1, false);
 
 
 --
 -- Name: items_id_seq; Type: SEQUENCE SET; Schema: zoopick; Owner: postgres
 --
 
-SELECT pg_catalog.setval('zoopick.items_id_seq', 11, true);
+SELECT pg_catalog.setval('zoopick.items_id_seq', 1, false);
 
 
 --
@@ -1327,7 +1329,7 @@ SELECT pg_catalog.setval('zoopick.notifications_id_seq', 1, false);
 -- Name: rooms_id_seq; Type: SEQUENCE SET; Schema: zoopick; Owner: postgres
 --
 
-SELECT pg_catalog.setval('zoopick.rooms_id_seq', 6, true);
+SELECT pg_catalog.setval('zoopick.rooms_id_seq', 16, true);
 
 
 --
@@ -1590,20 +1592,6 @@ ALTER TABLE ONLY zoopick.users
 ALTER TABLE ONLY zoopick.users
     ADD CONSTRAINT users_school_email_key UNIQUE (school_email);
 
---
--- Name: idx_items_embedding_hnsw; Type: INDEX; Schema: zoopick; Owner: postgres
---
-
-CREATE INDEX idx_items_embedding_hnsw ON zoopick.items USING hnsw (embedding vector_cosine_ops);
-
-
-
---
--- Name: idx_items_filtering; Type: INDEX; Schema: zoopick; Owner: postgres
---
-
-CREATE INDEX idx_items_filtering ON zoopick.items (category, color);
-
 
 --
 -- Name: idx_chatrooms_open; Type: INDEX; Schema: zoopick; Owner: postgres
@@ -1666,6 +1654,13 @@ CREATE INDEX idx_items_building ON zoopick.items USING btree (reported_building_
 --
 
 CREATE INDEX idx_items_created ON zoopick.items USING btree (created_at DESC);
+
+
+--
+-- Name: idx_items_filtering; Type: INDEX; Schema: zoopick; Owner: postgres
+--
+
+CREATE INDEX idx_items_filtering ON zoopick.items USING btree (category, color);
 
 
 --
@@ -1971,5 +1966,5 @@ ALTER TABLE ONLY zoopick.cctv_videos
 -- PostgreSQL database dump complete
 --
 
-\unrestrict iy4NXqJLE04WaVbAXkFSynTIPUX1VFkLGywRajAcxAxWEWglDsme3gweu4uml74
+\unrestrict knEphJBtBaU0XtNnamEd80jQUqm15GSDwBEkbzT3sCe6eNhHkym4htiMgY1Pc8T
 
