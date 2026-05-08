@@ -48,7 +48,7 @@ public class ItemPostService {
                 .build();
 
         Item savedItem = itemRepository.save(item);
-        eventPublisher.publishEvent(savedItem.getId());
+        eventPublisher.publishEvent(new ItemCreatedEvent(savedItem.getId()));
 
         ItemPost itemPost = ItemPost.builder()
                 .title(request.getTitle())
