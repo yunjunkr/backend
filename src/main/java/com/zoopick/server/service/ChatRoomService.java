@@ -2,7 +2,6 @@ package com.zoopick.server.service;
 
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.zoopick.server.dto.chat.*;
-import com.zoopick.server.dto.notification.SendNotificationRequest;
 import com.zoopick.server.entity.*;
 import com.zoopick.server.exception.BadRequestException;
 import com.zoopick.server.mapper.ChatMessageMapper;
@@ -11,6 +10,8 @@ import com.zoopick.server.repository.ChatMessageRepository;
 import com.zoopick.server.repository.ChatRoomRepository;
 import com.zoopick.server.repository.ItemRepository;
 import com.zoopick.server.repository.UserRepository;
+import com.zoopick.server.service.command.ChatMessagePayload;
+import com.zoopick.server.service.command.SendNotificationCommand;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -18,7 +19,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -139,18 +139,12 @@ public class ChatRoomService {
                 .content(message)
                 .build();
         chatMessageRepository.save(chatMessage);
-        Map<String, String> payload = Map.of(
-                "room_id", String.valueOf(chatRoomId),
-                "sender_nickname", sender.getNickname(),
-                "message", message
+        SendNotificationCommand command = new SendNotificationCommand(
+                sender.getNickname(),
+                message,
+                ChatMessagePayload.of(chatRoom, sender, message)
         );
-        SendNotificationRequest request = SendNotificationRequest.builder()
-                .title(sender.getNickname())
-                .body(message)
-                .type(NotificationType.CHAT_MESSAGE)
-                .payload(payload)
-                .build();
-        notificationService.send(receiver, request);
+        notificationService.send(receiver, command);
     }
 
     private User resolveReceiver(ChatRoom chatRoom, User sender) {

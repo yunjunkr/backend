@@ -2,7 +2,7 @@ package com.zoopick.server.dto.notification;
 
 
 import com.zoopick.server.entity.NotificationType;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.util.Map;
@@ -15,7 +15,7 @@ import java.util.Map;
 public class SendNotificationRequest {
     private String title;
     private String body;
-    @NotBlank
+    @NotNull
     private NotificationType type;
-    private Map<String, String> payload = Map.of();
+    private Map<String, Object> payload = Map.of();
 }

@@ -3,6 +3,7 @@ package com.zoopick.server.controller;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.zoopick.server.dto.CommonResponse;
 import com.zoopick.server.dto.notification.*;
+import com.zoopick.server.mapper.SendNotificationRequestMapper;
 import com.zoopick.server.security.UserPrincipal;
 import com.zoopick.server.service.NotificationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,6 +26,7 @@ import java.util.List;
 @NullMarked
 public class NotificationController {
     private final NotificationService notificationService;
+    private final SendNotificationRequestMapper sendNotificationRequestMapper;
 
     @Operation(summary = "FCM 토큰 등록", description = "클라이언트의 FCM 토큰을 등록합니다.")
     @ApiResponses(value = {
@@ -52,7 +54,7 @@ public class NotificationController {
             @PathVariable long userId,
             @RequestBody @Valid SendNotificationRequest request
     ) throws FirebaseMessagingException {
-        String result = notificationService.send(userId, request);
+        String result = notificationService.send(userId, sendNotificationRequestMapper.toCommand(request));
         return ResponseEntity.ok(CommonResponse.success(result));
     }
 
@@ -66,7 +68,7 @@ public class NotificationController {
     public ResponseEntity<CommonResponse<String>> broadcastNotification(
             @RequestBody @Valid SendNotificationRequest request
     ) throws FirebaseMessagingException {
-        String result = notificationService.broadcast(request);
+        String result = notificationService.broadcast(sendNotificationRequestMapper.toCommand(request));
         return ResponseEntity.ok(CommonResponse.success(result));
     }
 

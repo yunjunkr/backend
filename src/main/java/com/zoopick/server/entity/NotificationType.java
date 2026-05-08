@@ -18,6 +18,7 @@ public enum NotificationType {
         this.requiredPayloadKeys = Set.of(requiredPayloadKeys);
     }
 
+    @Deprecated(forRemoval = true)
     public void validatePayload(Map<String, String> payload) {
         if (payload.keySet().containsAll(this.requiredPayloadKeys))
             throw new BadRequestException("잘못된 알림 요청입니다.", "type: " + this + " required: " + requiredPayloadKeys);
