@@ -75,7 +75,7 @@ public class AuthService {
 
     public LoginResult login(LoginRequest request) {
         User user = userRepository.findBySchoolEmail(request.getSchoolEmail())
-                .orElseThrow(() -> new BadRequestException("로그인에 실패했습니다.", request.getSchoolEmail() + " is not in UserRepository"));
+                .orElseThrow(() -> DataNotFoundException.from("사용자", request.getSchoolEmail()));
 
         if (passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             String accessToken = jwtUtil.generateToken(user.getSchoolEmail());
