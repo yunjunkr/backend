@@ -32,8 +32,22 @@ public class TimetableService {
     public List<TimetableGroupResponse> getTimetableGroups(String email, Integer year, Integer semester) {
         User user = userRepository.findBySchoolEmailOrThrow(email);
         return groupRepository.findAllByUserAndYearAndSemester(user, year, semester).stream()
-                .map(g -> new TimetableGroupResponse(g.getId(), g.getName(), g.getIsPrimary()))
+                .map(g -> new TimetableGroupResponse(g.getId(), g.getName(), g.getYear(), g.getSemester(), g.getIsPrimary()))
                 .collect(Collectors.toList());
+    }
+
+    public List<TimetableGroupResponse> getMyTimetableGroups(String email) {
+        User user = userRepository.findBySchoolEmailOrThrow(email);
+        return groupRepository.findAllByUserOrderByYearDescSemesterDesc(user).stream()
+                .map(g -> new TimetableGroupResponse(g.getId(), g.getName(), g.getYear(), g.getSemester(), g.getIsPrimary()))
+                .collect(Collectors.toList());
+    }
+
+    public TimetableGroupResponse getPrimaryTimetableGroup(String email) {
+        User user = userRepository.findBySchoolEmailOrThrow(email);
+        TimetableGroup group = groupRepository.findByUserAndIsPrimaryTrue(user)
+                .orElseThrow(() -> new DataNotFoundException("기본 시간표가 설정되지 않았습니다.", "PRIMARY_TIMETABLE_NOT_FOUND"));
+        return new TimetableGroupResponse(group.getId(), group.getName(), group.getYear(), group.getSemester(), group.getIsPrimary());
     }
 
     @Transactional
@@ -52,7 +66,7 @@ public class TimetableService {
                 .build();
                 
         TimetableGroup saved = groupRepository.save(group);
-        return new TimetableGroupResponse(saved.getId(), saved.getName(), saved.getIsPrimary());
+        return new TimetableGroupResponse(saved.getId(), saved.getName(), saved.getYear(), saved.getSemester(), saved.getIsPrimary());
     }
 
     public List<TimetableCourseResponse> getTimetableDetails(String email, Long timetableId) {
@@ -100,6 +114,16 @@ public class TimetableService {
         }
 
         timetableRepository.saveAll(newTimetables);
+    }
+
+    @Transactional
+    public void deleteTimetableGroup(String email, Long timetableId) {
+        User user = userRepository.findBySchoolEmailOrThrow(email);
+        TimetableGroup group = groupRepository.findByIdAndUser(timetableId, user)
+                .orElseThrow(() -> DataNotFoundException.from("시간표", timetableId));
+
+        timetableRepository.deleteAllByTimetableGroup(group);
+        groupRepository.delete(group);
     }
 
     public Page<TimetableCourseResponse> searchCourses(Integer year, Integer semester, String keyword, Pageable pageable) {

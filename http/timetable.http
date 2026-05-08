@@ -1,5 +1,13 @@
-### 내 시간표 목록 조회
+### 내 시간표 목록 조회 (연도/학기 지정)
 GET {{baseUrl}}/api/timetables?year=2024&semester=1
+Authorization: Bearer {{accessToken}}
+
+### 나의 모든 시간표 목록 조회
+GET {{baseUrl}}/api/timetables/mine
+Authorization: Bearer {{accessToken}}
+
+### 기본 시간표 조회
+GET {{baseUrl}}/api/timetables/primary
 Authorization: Bearer {{accessToken}}
 
 ### 새 시간표 만들기
@@ -16,6 +24,10 @@ Content-Type: application/json
 ### 특정 시간표 상세 조회
 # @id: timetableId는 목록 조회에서 얻은 ID를 사용하세요.
 GET {{baseUrl}}/api/timetables/1
+Authorization: Bearer {{accessToken}}
+
+### 시간표 삭제
+DELETE {{baseUrl}}/api/timetables/1
 Authorization: Bearer {{accessToken}}
 
 ### 시간표 동기화 (Sync)
