@@ -2,6 +2,17 @@
 GET {{baseUrl}}/api/timetables?year=2024&semester=1
 Authorization: Bearer {{accessToken}}
 
+### 새 시간표 만들기
+POST {{baseUrl}}/api/timetables
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "플랜 B",
+  "year": 2024,
+  "semester": 1
+}
+
 ### 특정 시간표 상세 조회
 # @id: timetableId는 목록 조회에서 얻은 ID를 사용하세요.
 GET {{baseUrl}}/api/timetables/1

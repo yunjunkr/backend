@@ -1,14 +1,15 @@
 package com.zoopick.server.controller;
 
 import com.zoopick.server.dto.CommonResponse;
+import com.zoopick.server.dto.timetable.CreateTimetableRequest;
 import com.zoopick.server.dto.timetable.TimetableCourseResponse;
 import com.zoopick.server.dto.timetable.TimetableGroupResponse;
 import com.zoopick.server.dto.timetable.TimetableSyncRequest;
-import com.zoopick.server.entity.User;
 import com.zoopick.server.security.UserPrincipal;
 import com.zoopick.server.service.TimetableService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,6 +32,14 @@ public class TimetableController {
             @RequestParam Integer year,
             @RequestParam Integer semester) {
         return CommonResponse.success(timetableService.getTimetableGroups(principal.email(), year, semester));
+    }
+
+    @Operation(summary = "새 시간표 만들기", description = "특정 연도/학기에 새로운 시간표 그룹을 생성합니다.")
+    @PostMapping("/timetables")
+    public CommonResponse<TimetableGroupResponse> createTimetable(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @Valid @RequestBody CreateTimetableRequest request) {
+        return CommonResponse.success(timetableService.createTimetable(principal.email(), request));
     }
 
     @Operation(summary = "시간표 상세 조회", description = "특정 시간표의 상세 강의 목록을 가져옵니다.")

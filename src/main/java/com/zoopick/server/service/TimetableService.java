@@ -1,5 +1,6 @@
 package com.zoopick.server.service;
 
+import com.zoopick.server.dto.timetable.CreateTimetableRequest;
 import com.zoopick.server.dto.timetable.TimetableCourseResponse;
 import com.zoopick.server.dto.timetable.TimetableGroupResponse;
 import com.zoopick.server.dto.timetable.TimetableSyncRequest;
@@ -33,6 +34,25 @@ public class TimetableService {
         return groupRepository.findAllByUserAndYearAndSemester(user, year, semester).stream()
                 .map(g -> new TimetableGroupResponse(g.getId(), g.getName(), g.getIsPrimary()))
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public TimetableGroupResponse createTimetable(String email, CreateTimetableRequest request) {
+        User user = userRepository.findBySchoolEmailOrThrow(email);
+        
+        // 해당 학기의 첫 시간표라면 기본(primary)으로 설정
+        boolean isFirst = groupRepository.findAllByUserAndYearAndSemester(user, request.year(), request.semester()).isEmpty();
+
+        TimetableGroup group = TimetableGroup.builder()
+                .user(user)
+                .name(request.name())
+                .year(request.year())
+                .semester(request.semester())
+                .isPrimary(isFirst)
+                .build();
+                
+        TimetableGroup saved = groupRepository.save(group);
+        return new TimetableGroupResponse(saved.getId(), saved.getName(), saved.getIsPrimary());
     }
 
     public List<TimetableCourseResponse> getTimetableDetails(String email, Long timetableId) {
