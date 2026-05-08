@@ -94,8 +94,9 @@ public class TimetableService {
         TimetableGroup group = groupRepository.findByIdAndUser(timetableId, user)
                 .orElseThrow(() -> DataNotFoundException.from("시간표", timetableId));
 
-        // 1. 기존 내역 삭제
+        // 1. 기존 내역 삭제 후 즉시 플러시하여 DB에 반영
         timetableRepository.deleteAllByTimetableGroup(group);
+        timetableRepository.flush();
 
         // 2. 새로운 강의 데이터 로드 및 중복 검증
         List<Timetable> newTimetables = new ArrayList<>();
