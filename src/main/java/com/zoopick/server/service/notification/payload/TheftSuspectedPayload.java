@@ -3,6 +3,7 @@ package com.zoopick.server.service.notification.payload;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.zoopick.server.entity.Item;
 import com.zoopick.server.entity.NotificationType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import org.jspecify.annotations.NullMarked;
 
@@ -10,8 +11,13 @@ import java.util.Map;
 
 @AllArgsConstructor
 @NullMarked
+@Schema(
+        name = "TheftSuspectedPayload",
+        description = "도난 의심 알림 payload"
+)
 public class TheftSuspectedPayload implements NotificationPayload {
     @JsonProperty("item_id")
+    @Schema(description = "물품 ID", example = "10")
     private final long itemId;
 
     public static TheftSuspectedPayload of(Item item) {
