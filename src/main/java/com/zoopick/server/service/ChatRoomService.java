@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -35,6 +36,9 @@ public class ChatRoomService {
     private final ChatRoomMapper chatRoomMapper;
 
     public CreateChatRoomResult createChatRoom(long requesterId, CreateChatRoomRequest createChatRoomRequest) {
+        if (Objects.equals(requesterId, createChatRoomRequest.getCounterpartId()))
+            throw new BadRequestException("잘못된 요청입니다.", "Requester and counterpart is same : " + requesterId);
+
         long itemId = createChatRoomRequest.getItemId();
         Item item = itemRepository.findByIdOrThrow(itemId);
         User requester = userRepository.findByIdOrThrow(requesterId);
