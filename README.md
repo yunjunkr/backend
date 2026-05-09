@@ -48,6 +48,12 @@ createdb -U postgres(DB 사용자계정명) zoopick
 #2. 덤프 파일을 이용하여 스키마 및 데이터 복원
 psql -U postgres(DB 사용자계정명) -d zoopick -f zoopick_dump.sql
 ```
+```
+bash
+pg_dump -h localhost -U postgres -f zoopick_dump.sql -d zoopick 
+```
+시에 인코딩 오류 발생할 수도 있으니 주의(utf- 8 기준)
+
 ### 2. Redis 서버 실행(Redis 버전: 3.0.504)
 이메일 인증번호 등 휘발성 데이터 처리를 위해 Redis가 반드시 켜져 있어야 합니다.
 
