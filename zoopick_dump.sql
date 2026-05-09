@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict 9yBbw4DY2rd1eWndmvNIajy4k3FkWxAiCtQR1obhhKOopXqe3bbyhRZSoTllJR8
+\restrict sAWiQMAK4jBFu8AHrBDcgaVk5IHFbaPbcuwnszRZrLQ4VemxcLh8jtvOyJfiSBT
 
 -- Dumped from database version 18.3
 -- Dumped by pg_dump version 18.3
@@ -535,6 +535,36 @@ ALTER SEQUENCE zoopick.chat_rooms_id_seq OWNED BY zoopick.chat_rooms.id;
 
 
 --
+-- Name: course_schedules_id_seq; Type: SEQUENCE; Schema: zoopick; Owner: postgres
+--
+
+CREATE SEQUENCE zoopick.course_schedules_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE zoopick.course_schedules_id_seq OWNER TO postgres;
+
+--
+-- Name: course_schedules; Type: TABLE; Schema: zoopick; Owner: postgres
+--
+
+CREATE TABLE zoopick.course_schedules (
+                                          id bigint DEFAULT nextval('zoopick.course_schedules_id_seq'::regclass) NOT NULL,
+                                          course_id bigint NOT NULL,
+                                          day_of_week zoopick.day_of_week NOT NULL,
+                                          start_time time without time zone NOT NULL,
+                                          end_time time without time zone NOT NULL,
+                                          CONSTRAINT chk_schedule_time CHECK ((start_time < end_time))
+);
+
+
+ALTER TABLE zoopick.course_schedules OWNER TO postgres;
+
+--
 -- Name: courses; Type: TABLE; Schema: zoopick; Owner: postgres
 --
 
@@ -543,10 +573,7 @@ CREATE TABLE zoopick.courses (
                                  course_name character varying(100) NOT NULL,
                                  room_id bigint NOT NULL,
                                  year integer NOT NULL,
-                                 semester integer NOT NULL,
-                                 day_of_week zoopick.day_of_week NOT NULL,
-                                 start_time time without time zone NOT NULL,
-                                 end_time time without time zone NOT NULL
+                                 semester integer NOT NULL
 );
 
 
@@ -1042,9 +1069,9 @@ ALTER TABLE ONLY zoopick.users ALTER COLUMN id SET DEFAULT nextval('zoopick.user
 --
 
 COPY zoopick.buildings (id, name, code, latitude, longitude) FROM stdin;
-1	??怨듯븰愿	ENG1	37.222482	127.187167
+1	??怨듯븰愿	ENG5	37.221984	127.187616
 2	??怨듯븰愿	ENG2	37.221523	127.186795
-3	??怨듯븰愿	ENG5	37.221984	127.187616
+3	??怨듯븰愿	ENG1	37.222482	127.187167
 4	?⑤컯愿	HBK	37.221122	127.18861
 5	李쎌“?덉닠愿	ART	37.222838	127.189279
 \.
@@ -1099,35 +1126,63 @@ COPY zoopick.chat_rooms (id, item_id, owner_id, finder_id, status, resolved_by, 
 
 
 --
+-- Data for Name: course_schedules; Type: TABLE DATA; Schema: zoopick; Owner: postgres
+--
+
+COPY zoopick.course_schedules (id, course_id, day_of_week, start_time, end_time) FROM stdin;
+1	1	MON	13:00:00	14:50:00
+2	2	FRI	09:00:00	11:50:00
+3	3	MON	13:00:00	14:50:00
+4	3	WED	14:00:00	14:50:00
+5	4	TUE	14:00:00	14:50:00
+6	5	MON	10:00:00	12:50:00
+7	6	THU	13:00:00	14:50:00
+8	7	WED	10:00:00	11:50:00
+9	8	TUE	14:00:00	16:50:00
+10	9	MON	13:00:00	15:50:00
+11	10	MON	10:00:00	11:50:00
+12	10	WED	10:00:00	10:50:00
+13	11	TUE	13:00:00	14:50:00
+14	11	THU	13:00:00	13:50:00
+15	12	THU	13:00:00	15:50:00
+16	13	MON	13:00:00	14:50:00
+17	13	WED	13:00:00	13:50:00
+18	14	MON	14:00:00	15:50:00
+19	14	WED	14:00:00	15:50:00
+20	15	MON	11:00:00	12:50:00
+21	15	WED	11:00:00	11:50:00
+22	16	TUE	11:00:00	11:50:00
+23	16	THU	11:00:00	11:50:00
+24	17	TUE	11:00:00	13:50:00
+25	18	TUE	13:00:00	14:50:00
+26	19	FRI	13:00:00	15:50:00
+\.
+
+
+--
 -- Data for Name: courses; Type: TABLE DATA; Schema: zoopick; Owner: postgres
 --
 
-COPY zoopick.courses (id, course_name, room_id, year, semester, day_of_week, start_time, end_time) FROM stdin;
-1	4李⑥궛?낇쁺紐낃낵誘몃옒?ы쉶吏꾨줈?좏깮	1	2026	1	MON	13:00:00	14:50:00
-2	怨듯븰?섑븰1	2	2026	1	FRI	09:00:00	11:50:00
-3	湲?곌린	3	2026	1	MON	13:00:00	14:50:00
-4	湲?곌린	3	2026	1	WED	14:00:00	14:50:00
-5	?섍꼍怨쇱씤媛?4	2026	1	TUE	14:00:00	14:50:00
-6	?듦퀎??5	2026	1	MON	10:00:00	12:50:00
-7	?쇰컲?앸Ъ??6	2026	1	THU	13:00:00	14:50:00
-8	4李⑥궛?낇쁺紐낃낵誘몃옒?ы쉶吏꾨줈?좏깮	7	2026	1	WED	10:00:00	11:50:00
-9	而댄벂?고븯?쒖썾??7	2026	1	TUE	14:00:00	16:50:00
-10	罹≪뒪?ㅻ뵒?먯씤	8	2026	1	MON	13:00:00	15:50:00
-11	?댁쁺泥댁젣	9	2026	1	MON	10:00:00	11:50:00
-12	?댁쁺泥댁젣	9	2026	1	WED	10:00:00	10:50:00
-13	怨듯븰?섑븰1	9	2026	1	TUE	13:00:00	14:50:00
-14	怨듯븰?섑븰1	9	2026	1	THU	13:00:00	13:50:00
-15	?쒖뒪?쒗겢?쇱슦?쒕낫??10	2026	1	THU	13:00:00	15:50:00
-16	湲곌퀎?숈뒿	10	2026	1	MON	13:00:00	14:50:00
-17	湲곌퀎?숈뒿	10	2026	1	WED	13:00:00	13:50:00
-18	諛쒗몴??좎쓽	11	2026	1	MON	14:00:00	15:50:00
-19	諛쒗몴??좎쓽	11	2026	1	WED	14:00:00	15:50:00
-20	誘몄쟻遺꾪븰1	12	2026	1	MON	11:00:00	12:50:00
-21	?곸뼱1	13	2026	1	TUE	11:00:00	11:50:00
-22	?곸뼱1	13	2026	1	THU	11:00:00	11:50:00
-23	?멸퀎?곹솕??14	2026	1	TUE	11:00:00	13:50:00
-24	援먯뼇諛붾몣	15	2026	1	TUE	13:00:00	14:50:00
-25	裕ㅼ?而ш컻濡?16	2026	1	FRI	13:00:00	15:50:00
+COPY zoopick.courses (id, course_name, room_id, year, semester) FROM stdin;
+1	4李⑥궛?낇쁺紐낃낵誘몃옒?ы쉶吏꾨줈?좏깮	1	2026	1
+2	怨듯븰?섑븰1	2	2026	1
+3	湲?곌린	3	2026	1
+4	?섍꼍怨쇱씤媛?4	2026	1
+5	?듦퀎??5	2026	1
+6	?쇰컲?앸Ъ??6	2026	1
+7	4李⑥궛?낇쁺紐낃낵誘몃옒?ы쉶吏꾨줈?좏깮	7	2026	1
+8	而댄벂?고븯?쒖썾??7	2026	1
+9	罹≪뒪?ㅻ뵒?먯씤	8	2026	1
+10	?댁쁺泥댁젣	9	2026	1
+11	怨듯븰?섑븰1	9	2026	1
+12	?쒖뒪?쒗겢?쇱슦?쒕낫??10	2026	1
+13	湲곌퀎?숈뒿	10	2026	1
+14	諛쒗몴??좎쓽	11	2026	1
+15	誘몄쟻遺꾪븰1	12	2026	1
+16	?곸뼱1	13	2026	1
+17	?멸퀎?곹솕??14	2026	1
+18	援먯뼇諛붾몣	15	2026	1
+19	裕ㅼ?而ш컻濡?16	2026	1
 \.
 
 
@@ -1184,16 +1239,16 @@ COPY zoopick.notifications (id, user_id, type, payload, read_at, created_at) FRO
 --
 
 COPY zoopick.rooms (id, building_id, name) FROM stdin;
-1	1	Y106
-2	1	Y123
-3	1	Y117
+1	3	Y106
+2	3	Y123
+3	3	Y117
 4	2	Y8110
 5	2	Y8107
 6	2	Y8114
-7	3	Y5420
-8	3	Y5441
-9	3	Y5411
-10	3	Y5445
+7	1	Y5420
+8	1	Y5441
+9	1	Y5411
+10	1	Y5445
 11	4	Y9501
 12	4	Y9508
 13	4	Y9515
@@ -1277,10 +1332,17 @@ SELECT pg_catalog.setval('zoopick.chat_rooms_id_seq', 1, false);
 
 
 --
+-- Name: course_schedules_id_seq; Type: SEQUENCE SET; Schema: zoopick; Owner: postgres
+--
+
+SELECT pg_catalog.setval('zoopick.course_schedules_id_seq', 26, true);
+
+
+--
 -- Name: courses_id_seq; Type: SEQUENCE SET; Schema: zoopick; Owner: postgres
 --
 
-SELECT pg_catalog.setval('zoopick.courses_id_seq', 25, true);
+SELECT pg_catalog.setval('zoopick.courses_id_seq', 19, true);
 
 
 --
@@ -1343,7 +1405,7 @@ SELECT pg_catalog.setval('zoopick.timetables_id_seq', 1, false);
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: zoopick; Owner: postgres
 --
 
-SELECT pg_catalog.setval('zoopick.users_id_seq', 5, true);
+SELECT pg_catalog.setval('zoopick.users_id_seq', 1, false);
 
 
 --
@@ -1416,6 +1478,14 @@ ALTER TABLE ONLY zoopick.chat_messages
 
 ALTER TABLE ONLY zoopick.chat_rooms
     ADD CONSTRAINT chat_rooms_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: course_schedules course_schedules_pkey; Type: CONSTRAINT; Schema: zoopick; Owner: postgres
+--
+
+ALTER TABLE ONLY zoopick.course_schedules
+    ADD CONSTRAINT course_schedules_pkey PRIMARY KEY (id);
 
 
 --
@@ -1507,11 +1577,19 @@ ALTER TABLE ONLY zoopick.timetables
 
 
 --
--- Name: courses uq_course_slot; Type: CONSTRAINT; Schema: zoopick; Owner: postgres
+-- Name: courses uq_course_per_semester; Type: CONSTRAINT; Schema: zoopick; Owner: postgres
 --
 
 ALTER TABLE ONLY zoopick.courses
-    ADD CONSTRAINT uq_course_slot UNIQUE (room_id, year, semester, day_of_week, start_time);
+    ADD CONSTRAINT uq_course_per_semester UNIQUE (room_id, year, semester, course_name);
+
+
+--
+-- Name: course_schedules uq_course_schedule; Type: CONSTRAINT; Schema: zoopick; Owner: postgres
+--
+
+ALTER TABLE ONLY zoopick.course_schedules
+    ADD CONSTRAINT uq_course_schedule UNIQUE (course_id, day_of_week, start_time);
 
 
 --
@@ -1601,10 +1679,17 @@ CREATE INDEX idx_commands_pending ON zoopick.locker_commands USING btree (locker
 
 
 --
--- Name: idx_courses_day_time; Type: INDEX; Schema: zoopick; Owner: postgres
+-- Name: idx_course_schedules_course; Type: INDEX; Schema: zoopick; Owner: postgres
 --
 
-CREATE INDEX idx_courses_day_time ON zoopick.courses USING btree (day_of_week, start_time);
+CREATE INDEX idx_course_schedules_course ON zoopick.course_schedules USING btree (course_id);
+
+
+--
+-- Name: idx_course_schedules_dow_time; Type: INDEX; Schema: zoopick; Owner: postgres
+--
+
+CREATE INDEX idx_course_schedules_dow_time ON zoopick.course_schedules USING btree (day_of_week, start_time, end_time);
 
 
 --
@@ -1789,6 +1874,14 @@ ALTER TABLE ONLY zoopick.locker_commands
 
 
 --
+-- Name: course_schedules fk_course_schedules_course; Type: FK CONSTRAINT; Schema: zoopick; Owner: postgres
+--
+
+ALTER TABLE ONLY zoopick.course_schedules
+    ADD CONSTRAINT fk_course_schedules_course FOREIGN KEY (course_id) REFERENCES zoopick.courses(id) ON DELETE CASCADE;
+
+
+--
 -- Name: courses fk_courses_room; Type: FK CONSTRAINT; Schema: zoopick; Owner: postgres
 --
 
@@ -1952,5 +2045,5 @@ ALTER TABLE ONLY zoopick.cctv_videos
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 9yBbw4DY2rd1eWndmvNIajy4k3FkWxAiCtQR1obhhKOopXqe3bbyhRZSoTllJR8
+\unrestrict sAWiQMAK4jBFu8AHrBDcgaVk5IHFbaPbcuwnszRZrLQ4VemxcLh8jtvOyJfiSBT
 
