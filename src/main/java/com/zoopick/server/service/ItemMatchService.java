@@ -1,14 +1,20 @@
 package com.zoopick.server.service;
 
+import com.google.firebase.messaging.FirebaseMessagingException;
 import com.zoopick.server.dto.match.ItemMatchResultResponse;
 import com.zoopick.server.dto.match.MatchManualRequest;
 import com.zoopick.server.dto.match.MatchManualResponse;
 import com.zoopick.server.dto.match.SimilarItemResult;
 import com.zoopick.server.entity.*;
 import com.zoopick.server.exception.BadRequestException;
+import com.zoopick.server.exception.DataNotFoundException;
 import com.zoopick.server.repository.ItemMatchRepository;
+import com.zoopick.server.repository.ItemPostRepository;
 import com.zoopick.server.repository.ItemRepository;
 import com.zoopick.server.repository.LockerRepository;
+import com.zoopick.server.service.notification.payload.MatchFoundPayload;
+import com.zoopick.server.service.notification.SendNotificationCommand;
+import com.zoopick.server.service.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,6 +32,8 @@ public class ItemMatchService {
     private final ItemRepository itemRepository;
     private final ItemMatchRepository itemMatchRepository;
     private final LockerRepository lockerRepository;
+    private final NotificationService notificationService;
+    private final ItemPostRepository itemPostRepository;
     @Value("${zoopick.similarity.threshold}")
     private float similarityThreshold;
     public void createMatch(Long itemId) {
@@ -48,16 +56,21 @@ public class ItemMatchService {
                 // 게시글에 올라온 아이템이 LOST라면 lostItem에, FOUND라면 foundItem에
                 Item lostItem = targetItem.getType() == ItemType.LOST ? targetItem : foundItemInDb;
                 Item foundItem = targetItem.getType() == ItemType.LOST ? foundItemInDb : targetItem;
-                ItemMatch itemMatch = ItemMatch
-                        .builder()
-                        .score((float) similarItemResult.getScore())
-                        .lostItem(lostItem)
-                        .foundItem(foundItem)
-                        .status(MatchStatus.CANDIDATE)
-                        .build();
                 // 중복 저장 방지
-                if (!itemMatchRepository.existsByLostItemAndFoundItem(lostItem, foundItem))
-                    itemMatchRepository.save(itemMatch);
+                if (!itemMatchRepository.existsByLostItemAndFoundItem(lostItem, foundItem)) {
+                    ItemMatch itemMatch = ItemMatch
+                            .builder()
+                            .score((float) similarItemResult.getScore())
+                            .lostItem(lostItem)
+                            .foundItem(foundItem)
+                            .status(MatchStatus.CANDIDATE)
+                            .build();
+                    ItemMatch savedMatch = itemMatchRepository.save(itemMatch);
+                    boolean isSent = sendMatchNotification(lostItem, foundItem, savedMatch);
+                    if (isSent) {
+                        savedMatch.setStatus(MatchStatus.NOTIFIED);
+                    }
+                }
             }
         }
         else log.warn("매칭된 아이템이 없습니다.");
@@ -138,6 +151,26 @@ public class ItemMatchService {
                     .matchId(itemMatch.getId())
                     .matchManualType(MatchManualType.CHAT)
                     .build();
+        }
+    }
+
+    private boolean sendMatchNotification(Item lostItem, Item foundItem, ItemMatch match) {
+        String title = itemPostRepository.findByItem(lostItem).getTitle();
+        String location = foundItem.getLocationName();
+        try {
+            notificationService.send(lostItem.getReporter(), new SendNotificationCommand(
+                    "분실물 발견",
+                    "회원님이 등록한 %s와 유사한 물건이 %s에서 발견됐어요.".formatted(title, location),
+                    new MatchFoundPayload(lostItem.getId(), match.getId(), match.getScore())
+            ));
+            return true;
+        } catch (FirebaseMessagingException e) {
+            log.error("FCM 전송 실패 (matchId: {}): {}", match.getId(), e.getMessage());
+            return false;
+        } catch (DataNotFoundException e) {
+            // FCM 토큰 없는 유저
+            log.warn("FCM 토큰 없음 (matchId: {}, userId: {})", match.getId(), lostItem.getReporter().getId());
+            return false;
         }
     }
 }

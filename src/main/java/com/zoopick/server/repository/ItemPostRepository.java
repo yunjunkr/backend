@@ -1,10 +1,7 @@
 package com.zoopick.server.repository;
 
 import com.zoopick.server.dto.item.ItemPostFilter;
-import com.zoopick.server.entity.ItemCategory;
-import com.zoopick.server.entity.ItemColor;
-import com.zoopick.server.entity.ItemPost;
-import com.zoopick.server.entity.ItemStatus;
+import com.zoopick.server.entity.*;
 import com.zoopick.server.exception.DataNotFoundException;
 import jakarta.persistence.criteria.Join;
 import org.springframework.data.jpa.domain.Specification;
@@ -54,4 +51,5 @@ public interface ItemPostRepository extends JpaRepository<ItemPost, Long>, JpaSp
     }
 
     long countByUserId(Long userId);
+    ItemPost findByItem(Item item);
 }
