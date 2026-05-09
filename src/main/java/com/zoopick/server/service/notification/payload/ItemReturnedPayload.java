@@ -13,7 +13,7 @@ import java.util.Map;
 @NullMarked
 @Schema(
         name = "ItemReturnedPayload",
-        description = "분실물 반환 알림 payload"
+        description = "ITEM_RETURNED : 분실물 반환 알림 payload"
 )
 public class ItemReturnedPayload implements NotificationPayload {
     @JsonProperty("item_id")

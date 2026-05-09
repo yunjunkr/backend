@@ -14,7 +14,7 @@ import java.util.Map;
 @NullMarked
 @Schema(
         name = "MatchFoundPayload",
-        description = "매칭 발견 알림 payload"
+        description = "MATCH_FOUND : 매칭 발견 알림 payload"
 )
 public class MatchFoundPayload implements NotificationPayload {
     @JsonProperty("item_id")

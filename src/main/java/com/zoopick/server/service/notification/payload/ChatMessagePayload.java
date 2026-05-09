@@ -14,7 +14,7 @@ import java.util.Map;
 @NullMarked
 @Schema(
         name = "ChatMessagePayload",
-        description = "채팅 메시지 알림 payload"
+        description = "CHAT_MESSAGE : 채팅 메시지 알림 payload"
 )
 public class ChatMessagePayload implements NotificationPayload {
     @JsonProperty("room_id")
