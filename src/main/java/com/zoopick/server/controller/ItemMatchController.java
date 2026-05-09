@@ -50,6 +50,11 @@ public class ItemMatchController {
         return CommonResponse.success(matchId);
     }
 
+    @Operation(summary = "매칭 거절", description = "유저가 아이템의 매칭을 거절합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "매칭 거절"),
+            @ApiResponse(responseCode = "404", description = "매칭을 찾을 수 없음")
+    })
     @PostMapping("/{matchId}/reject")
     public CommonResponse<Long> itemMatchReject(
             @Parameter(description = "매치 id")
@@ -57,7 +62,12 @@ public class ItemMatchController {
         itemMatchService.rejectMatch(matchId);
         return CommonResponse.success(matchId);
     }
-
+    
+    @Operation(summary = "매칭 수동 적용", description = "유저가 아이템의 매칭을 수동 성사시킵니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "매칭 성공"),
+            @ApiResponse(responseCode = "404", description = "매칭을 찾을 수 없음")
+    })
     @PostMapping("/manual")
     public CommonResponse<MatchManualResponse> itemMatchManual(@RequestBody MatchManualRequest request) {
         MatchManualResponse matchManualResponse = itemMatchService.matchManual(request);

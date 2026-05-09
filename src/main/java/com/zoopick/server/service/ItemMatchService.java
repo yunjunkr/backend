@@ -36,6 +36,7 @@ public class ItemMatchService {
     private final ItemPostRepository itemPostRepository;
     @Value("${zoopick.similarity.threshold}")
     private float similarityThreshold;
+
     public void createMatch(Long itemId) {
         log.info("매칭 시작 ID: {}", itemId);
         Item targetItem = itemRepository.findByIdOrThrow(itemId); // 게시글이 올라간 아이템
@@ -49,31 +50,33 @@ public class ItemMatchService {
                 .stream()
                 .map(p -> new SimilarItemResult(p.getItemId(), p.getScore()))
                 .toList();
-        if (!similarItems.isEmpty()) {
-            for (SimilarItemResult similarItemResult : similarItems) {
-                Item foundItemInDb = itemRepository.findByIdOrThrow(similarItemResult.getItemId());
-                log.info("매칭된 아이템 ID: {}", foundItemInDb.getId());
-                // 게시글에 올라온 아이템이 LOST라면 lostItem에, FOUND라면 foundItem에
-                Item lostItem = targetItem.getType() == ItemType.LOST ? targetItem : foundItemInDb;
-                Item foundItem = targetItem.getType() == ItemType.LOST ? foundItemInDb : targetItem;
-                // 중복 저장 방지
-                if (!itemMatchRepository.existsByLostItemAndFoundItem(lostItem, foundItem)) {
-                    ItemMatch itemMatch = ItemMatch
-                            .builder()
-                            .score((float) similarItemResult.getScore())
-                            .lostItem(lostItem)
-                            .foundItem(foundItem)
-                            .status(MatchStatus.CANDIDATE)
-                            .build();
-                    ItemMatch savedMatch = itemMatchRepository.save(itemMatch);
-                    boolean isSent = sendMatchNotification(lostItem, foundItem, savedMatch);
-                    if (isSent) {
-                        savedMatch.setStatus(MatchStatus.NOTIFIED);
-                    }
+
+        if (similarItems.isEmpty()) {
+            log.warn("매칭된 아이템이 없습니다.");
+            return;
+        }
+        for (SimilarItemResult similarItemResult : similarItems) {
+            Item foundItemInDb = itemRepository.findByIdOrThrow(similarItemResult.getItemId());
+            log.info("매칭된 아이템 ID: {}", foundItemInDb.getId());
+            // 게시글에 올라온 아이템이 LOST라면 lostItem에, FOUND라면 foundItem에
+            Item lostItem = targetItem.getType() == ItemType.LOST ? targetItem : foundItemInDb;
+            Item foundItem = targetItem.getType() == ItemType.LOST ? foundItemInDb : targetItem;
+            // 중복 저장 방지
+            if (!itemMatchRepository.existsByLostItemAndFoundItem(lostItem, foundItem)) {
+                ItemMatch itemMatch = ItemMatch
+                        .builder()
+                        .score((float) similarItemResult.getScore())
+                        .lostItem(lostItem)
+                        .foundItem(foundItem)
+                        .status(MatchStatus.CANDIDATE)
+                        .build();
+                ItemMatch savedMatch = itemMatchRepository.save(itemMatch);
+                boolean isSent = sendMatchNotification(lostItem, foundItem, savedMatch);
+                if (isSent) {
+                    savedMatch.setStatus(MatchStatus.NOTIFIED);
                 }
             }
         }
-        else log.warn("매칭된 아이템이 없습니다.");
         log.info("매칭 종료 ID: {}", targetItem.getId());
     }
 
@@ -100,10 +103,12 @@ public class ItemMatchService {
         Item lostItem = itemMatch.getLostItem();
         Item foundItem = itemMatch.getFoundItem();
 
+        validateNotAlreadyConfirmed(lostItem, foundItem);
+
         lostItem.setStatus(ItemStatus.MATCHED);
         foundItem.setStatus(ItemStatus.MATCHED);
-
         itemMatch.setStatus(MatchStatus.CONFIRMED);
+        itemMatchRepository.rejectOthersByLostItem(matchId, lostItem.getId(), foundItem.getId());
         log.info("매칭 CONFIRMED ID: {}", matchId);
     }
 
@@ -121,34 +126,30 @@ public class ItemMatchService {
         if (itemMatchRepository.existsByLostItemAndFoundItem(lostItem, foundItem)) {
             throw new BadRequestException("이미 진행중인 매칭입니다.");
         }
-        if (itemMatchRepository.existsByLostItemAndStatus(lostItem, MatchStatus.CONFIRMED) ||
-                itemMatchRepository.existsByFoundItemAndStatus(foundItem, MatchStatus.CONFIRMED)) {
-            throw new BadRequestException("이미 주인을 찾은 물품이 있습니다.");
-        }
+        validateNotAlreadyConfirmed(lostItem, foundItem);
 
-        ItemMatch itemMatch = ItemMatch.builder() //새로운 매칭 생성
+        ItemMatch savedMatch = itemMatchRepository.save(ItemMatch.builder() // 새로운 매칭
                 .lostItem(lostItem)
                 .foundItem(foundItem)
                 .score(1.0f)
                 .status(MatchStatus.CONFIRMED)
-                .build();
-        itemMatchRepository.save(itemMatch);
-        itemMatchRepository.rejectOthersByLostItem(itemMatch.getId(), lostItem.getId(), foundItem.getId());
-        log.info("매칭 저장 완료 ID: {}", itemMatch.getId());
+                .build());
+        itemMatchRepository.rejectOthersByLostItem(savedMatch.getId(), lostItem.getId(), foundItem.getId());
+        log.info("매칭 저장 완료 ID: {}", savedMatch.getId());
 
         //LOCKER, CHAT 분기
         if (foundItem.getStatus().equals(ItemStatus.IN_LOCKER)) {
             Locker locker = lockerRepository.findLockerByCurrentItem(foundItem);
             log.info("매칭 LOCKER {} <-> {}", request.getLostItemId(), request.getFoundItemId());
             return MatchManualResponse.builder()
-                    .matchId(itemMatch.getId())
+                    .matchId(savedMatch.getId())
                     .matchManualType(MatchManualType.LOCKER)
                     .lockerId(locker.getId())
                     .build();
         } else {
             log.info("매칭 CHAT {} <-> {}", request.getLostItemId(), request.getFoundItemId());
             return MatchManualResponse.builder()
-                    .matchId(itemMatch.getId())
+                    .matchId(savedMatch.getId())
                     .matchManualType(MatchManualType.CHAT)
                     .build();
         }
@@ -171,6 +172,13 @@ public class ItemMatchService {
             // FCM 토큰 없는 유저
             log.warn("FCM 토큰 없음 (matchId: {}, userId: {})", match.getId(), lostItem.getReporter().getId());
             return false;
+        }
+    }
+
+    private void validateNotAlreadyConfirmed(Item lostItem, Item foundItem) {
+        if (itemMatchRepository.existsByLostItemAndStatus(lostItem, MatchStatus.CONFIRMED) ||
+                itemMatchRepository.existsByFoundItemAndStatus(foundItem, MatchStatus.CONFIRMED)) {
+            throw new BadRequestException("이미 주인을 찾은 물품이 있습니다.");
         }
     }
 }
