@@ -2,7 +2,7 @@ package com.zoopick.server.controller;
 
 import com.zoopick.server.dto.CommonResponse;
 import com.zoopick.server.dto.timetable.CreateTimetableRequest;
-import com.zoopick.server.dto.timetable.TimetableCourseResponse;
+import com.zoopick.server.dto.timetable.TimetableCourseRecord;
 import com.zoopick.server.dto.timetable.TimetableGroupResponse;
 import com.zoopick.server.dto.timetable.TimetableSyncRequest;
 import com.zoopick.server.security.UserPrincipal;
@@ -58,7 +58,7 @@ public class TimetableController {
 
     @Operation(summary = "시간표 상세 조회", description = "특정 시간표의 상세 강의 목록을 가져옵니다.")
     @GetMapping("/timetables/{id}")
-    public CommonResponse<List<TimetableCourseResponse>> getTimetableDetails(
+    public CommonResponse<List<TimetableCourseRecord>> getTimetableDetails(
             @AuthenticationPrincipal UserPrincipal principal,
             @PathVariable Long id) {
         return CommonResponse.success(timetableService.getTimetableDetails(principal.email(), id));
@@ -85,7 +85,7 @@ public class TimetableController {
 
     @Operation(summary = "강의 검색", description = "시스템에 등록된 전체 강의 마스터 데이터를 검색합니다.")
     @GetMapping("/courses")
-    public CommonResponse<Page<TimetableCourseResponse>> searchCourses(
+    public CommonResponse<Page<TimetableCourseRecord>> searchCourses(
             @RequestParam Integer year,
             @RequestParam Integer semester,
             @RequestParam(required = false) String keyword,

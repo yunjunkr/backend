@@ -2,10 +2,6 @@ package com.zoopick.server.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
-
-import java.time.LocalTime;
 
 @Entity
 @Table(name = "courses", schema = "zoopick")
@@ -31,19 +27,4 @@ public class Course {
 
     @Column(nullable = false)
     private Integer semester;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "day_of_week", nullable = false)
-    private DayOfWeek dayOfWeek;
-
-    @Column(name = "start_time", nullable = false)
-    private LocalTime startTime;
-
-    @Column(name = "end_time", nullable = false)
-    private LocalTime endTime;
-
-    public enum DayOfWeek {
-        MON, TUE, WED, THU, FRI, SAT, SUN
-    }
 }
