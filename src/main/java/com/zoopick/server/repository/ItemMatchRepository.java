@@ -34,6 +34,7 @@ public interface ItemMatchRepository extends JpaRepository<ItemMatch, Long> {
         WHERE i.category = CAST(:category AS item_category)
           AND i.color = CAST(:color AS item_color)
           AND i.type <> CAST(:excludeType AS item_type)
+          AND i.reporter_id <> :reporterId
           AND i.returned_at IS NULL
         ORDER BY i.embedding <=> CAST(:embedding AS vector)
         LIMIT 100
@@ -44,6 +45,7 @@ public interface ItemMatchRepository extends JpaRepository<ItemMatch, Long> {
                                                  @Param("excludeType") String excludeType,
                                                  @Param("category") String category,
                                                  @Param("color") String color,
+                                                 @Param("reporterId") Long reporterId,
                                                  @Param("threshold") float threshold);
 
     // 중복 체크

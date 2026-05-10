@@ -46,6 +46,7 @@ public class ItemMatchService {
                         targetItem.getType().name(),
                         targetItem.getCategory().name(),
                         targetItem.getColor().name(),
+                        targetItem.getReporter().getId(),
                         similarityThreshold)
                 .stream()
                 .map(p -> new SimilarItemResult(p.getItemId(), p.getScore()))
