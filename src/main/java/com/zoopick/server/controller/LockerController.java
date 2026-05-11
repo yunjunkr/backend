@@ -1,6 +1,7 @@
 package com.zoopick.server.controller;
 
 import com.zoopick.server.entity.LockerCommand;
+import com.zoopick.server.security.UserPrincipal;
 import com.zoopick.server.service.LockerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -8,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -37,11 +39,12 @@ public class LockerController {
     })
     @PostMapping("/{lockerId}/unlock")
     public ResponseEntity<Map<String, Object>> unlock(
+            @AuthenticationPrincipal UserPrincipal principal,
             @PathVariable Long lockerId,
             @RequestBody(required = false) UnlockRequest req) {
 
         Long itemId = (req != null) ? req.itemId() : null;
-        LockerCommand cmd = lockerService.requestUnlock(lockerId, itemId);
+        LockerCommand cmd = lockerService.requestUnlock(principal.email(), lockerId, itemId);
 
         return ResponseEntity.ok(Map.of(
                 "success", true,
@@ -60,8 +63,10 @@ public class LockerController {
             @ApiResponse(responseCode = "404", description = "사물함을 찾을 수 없음"),
     })
     @PostMapping("/{lockerId}/lock")
-    public ResponseEntity<Map<String, Object>> lock(@PathVariable Long lockerId) {
-        LockerCommand cmd = lockerService.requestLock(lockerId);
+    public ResponseEntity<Map<String, Object>> lock(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable Long lockerId) {
+        LockerCommand cmd = lockerService.requestLock(principal.email(), lockerId);
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "command_id", cmd.getId(),
@@ -107,6 +112,7 @@ public class LockerController {
             @ApiResponse(responseCode = "400", description = "명령이 해당 사물함의 것이 아님"),
             @ApiResponse(responseCode = "404", description = "명령을 찾을 수 없음"),
     })
+    @PostMapping("/{lockerId}/commands/{commandId}/ack")
     public ResponseEntity<Void> ack(
             @PathVariable Long lockerId,
             @PathVariable Long commandId) {
