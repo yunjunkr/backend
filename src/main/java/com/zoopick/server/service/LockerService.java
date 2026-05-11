@@ -6,6 +6,7 @@ import com.zoopick.server.exception.DataNotFoundException;
 import com.zoopick.server.repository.ItemRepository;
 import com.zoopick.server.repository.LockerCommandRepository;
 import com.zoopick.server.repository.LockerRepository;
+import com.zoopick.server.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,9 +23,11 @@ public class LockerService {
     private final LockerRepository lockerRepository;
     private final LockerCommandRepository commandRepository;
     private final ItemRepository itemRepository;
+    private final UserRepository userRepository;
 
     @Transactional
-    public LockerCommand requestUnlock(Long lockerId, Long itemId) {
+    public LockerCommand requestUnlock(String email, Long lockerId, Long itemId) {
+        User user = userRepository.findBySchoolEmailOrThrow(email);
         Locker locker = lockerRepository.findById(lockerId)
                 .orElseThrow(() -> DataNotFoundException.from("사물함", lockerId));
 
@@ -42,7 +45,7 @@ public class LockerService {
             handleRetrieval(locker);
         }
 
-        return enqueue(locker, LockerCommandType.OPEN);
+        return enqueue(user, locker, LockerCommandType.OPEN);
     }
 
     private void handleStorage(Locker locker, Long itemId) {
@@ -88,17 +91,19 @@ public class LockerService {
     }
 
     @Transactional
-    public LockerCommand requestLock(Long lockerId) {
+    public LockerCommand requestLock(String email, Long lockerId) {
+        User user = userRepository.findBySchoolEmailOrThrow(email);
         Locker locker = lockerRepository.findById(lockerId)
                 .orElseThrow(() -> DataNotFoundException.from("사물함", lockerId));
         log.info("[CLOSE] locker_id={} 잠금 요청", lockerId);
-        return enqueue(locker, LockerCommandType.CLOSE);
+        return enqueue(user, locker, LockerCommandType.CLOSE);
     }
 
-    private LockerCommand enqueue(Locker locker, LockerCommandType type) {
+    private LockerCommand enqueue(User user, Locker locker, LockerCommandType type) {
         return commandRepository.save(LockerCommand.builder()
                 .locker(locker)
                 .command(type)
+                .issuedBy(user)
                 .status(LockerCommandStatus.PENDING)
                 .createdAt(LocalDateTime.now())
                 .build());

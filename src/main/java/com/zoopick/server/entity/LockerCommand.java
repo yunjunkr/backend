@@ -34,6 +34,10 @@ public class LockerCommand {
     @Column(nullable = false, columnDefinition = "locker_command_status")
     private LockerCommandStatus status;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "issued_by")
+    private User issuedBy;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
