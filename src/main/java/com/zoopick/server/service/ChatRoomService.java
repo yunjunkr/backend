@@ -45,13 +45,33 @@ public class ChatRoomService {
         User counterpart = userRepository.findByIdOrThrow(createChatRoomRequest.getCounterpartId());
 
         Optional<ChatRoom> existingChatRoom = chatRoomRepository.findByParticipantIdAndItemIdIs(requesterId, itemId);
-        if (existingChatRoom.isPresent())
+        if (existingChatRoom.isPresent()) {
+            existingChatRoom.get().setStatus(ChatRoomStatus.OPEN);
             return new CreateChatRoomResult(false, chatRoomMapper.toChatRoomRecord(existingChatRoom.get()));
+        }
 
         ChatRoom chatRoom = ChatRoom.builder()
                 .item(item)
                 .owner(resolveOwner(item.getType(), requester, counterpart))
                 .finder(resolveFinder(item.getType(), requester, counterpart))
+                .build();
+        ChatRoom savedChatRoom = chatRoomRepository.save(chatRoom);
+        return new CreateChatRoomResult(true, chatRoomMapper.toChatRoomRecord(savedChatRoom));
+    }
+
+    public CreateChatRoomResult createChatRoomByOwner(long requesterId, long ownerId) {
+        User requester = userRepository.findByIdOrThrow(requesterId);
+        User owner = userRepository.findByIdOrThrow(ownerId);
+
+        Optional<ChatRoom> existingChatRoom = chatRoomRepository.findByOwnerIdAndFinderIdIs(ownerId, requesterId);
+        if (existingChatRoom.isPresent()) {
+            existingChatRoom.get().setStatus(ChatRoomStatus.OPEN);
+            return new CreateChatRoomResult(false, chatRoomMapper.toChatRoomRecord(existingChatRoom.get()));
+        }
+
+        ChatRoom chatRoom = ChatRoom.builder()
+                .owner(owner)
+                .finder(requester)
                 .build();
         ChatRoom savedChatRoom = chatRoomRepository.save(chatRoom);
         return new CreateChatRoomResult(true, chatRoomMapper.toChatRoomRecord(savedChatRoom));

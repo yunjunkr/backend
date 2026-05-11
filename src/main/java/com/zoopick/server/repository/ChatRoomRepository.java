@@ -27,4 +27,6 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     }
 
     long countByOwnerIdOrFinderId(Long ownerId, Long finderId);
+
+    Optional<ChatRoom> findByOwnerIdAndFinderIdIs(long ownerId, long finderId);
 }

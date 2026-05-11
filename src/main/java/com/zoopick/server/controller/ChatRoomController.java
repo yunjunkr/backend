@@ -74,6 +74,16 @@ public class ChatRoomController {
         return ResponseEntity.status(httpStatue).body(CommonResponse.success(result));
     }
 
+    @PostMapping("/by-owner")
+    public ResponseEntity<CommonResponse<CreateChatRoomResult>> createChatRoomByOwner(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestBody @Valid CreateChatRoomByOwnerRequest request
+    ) {
+        CreateChatRoomResult result = chatRoomService.createChatRoomByOwner(principal.id(), request.getOwnerId());
+        HttpStatusCode httpStatue = result.isCreated() ? HttpStatus.CREATED : HttpStatus.OK;
+        return ResponseEntity.status(httpStatue).body(CommonResponse.success(result));
+    }
+
     @Operation(summary = "채팅방 단건 조회", description = "채팅방 ID로 채팅방 상세 정보를 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "채팅방 조회 성공"),
