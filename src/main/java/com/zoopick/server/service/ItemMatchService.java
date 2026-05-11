@@ -1,17 +1,11 @@
 package com.zoopick.server.service;
 
-import com.google.firebase.messaging.FirebaseMessagingException;
 import com.zoopick.server.dto.match.*;
 import com.zoopick.server.entity.*;
 import com.zoopick.server.exception.BadRequestException;
-import com.zoopick.server.exception.DataNotFoundException;
 import com.zoopick.server.repository.ItemMatchRepository;
-import com.zoopick.server.repository.ItemPostRepository;
 import com.zoopick.server.repository.ItemRepository;
 import com.zoopick.server.repository.LockerRepository;
-import com.zoopick.server.service.notification.NotificationService;
-import com.zoopick.server.service.notification.SendNotificationCommand;
-import com.zoopick.server.service.notification.payload.MatchFoundPayload;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,8 +26,6 @@ public class ItemMatchService {
     private final ItemRepository itemRepository;
     private final ItemMatchRepository itemMatchRepository;
     private final LockerRepository lockerRepository;
-    private final NotificationService notificationService;
-    private final ItemPostRepository itemPostRepository;
     private final ApplicationEventPublisher eventPublisher;
     @Value("${zoopick.similarity.threshold}")
     private float similarityThreshold;
@@ -59,7 +51,7 @@ public class ItemMatchService {
         }
 
         Map<Long, Item> itemMap = itemRepository.findAllById(
-                        similarItems.stream().map(SimilarItemResult::getItemId).toList())
+                similarItems.stream().map(SimilarItemResult::getItemId).toList())
                 .stream()
                 .collect(Collectors.toMap(Item::getId, i -> i));
 
@@ -89,10 +81,7 @@ public class ItemMatchService {
                         .status(MatchStatus.CANDIDATE)
                         .build());
                 log.info("매칭된 아이템 ID: {}", foundItemInDb.getId());
-                eventPublisher.publishEvent(new CreateMatchEvent(savedMatch.getId(), lostItem, foundItem));
-                if (sendMatchNotification(lostItem, foundItem, savedMatch)) {
-                    savedMatch.setStatus(MatchStatus.NOTIFIED);
-                }
+                eventPublisher.publishEvent(new CreateMatchEvent(savedMatch.getId(), lostItem.getId(), foundItem.getId()));
             }
         }
         log.info("매칭 종료 ID: {}", targetItem.getId());
@@ -173,25 +162,6 @@ public class ItemMatchService {
                     .matchId(savedMatch.getId())
                     .matchManualType(MatchManualType.CHAT)
                     .build();
-        }
-    }
-
-    private boolean sendMatchNotification(Item lostItem, Item foundItem, ItemMatch match) {
-        String title = itemPostRepository.findByItem(lostItem).getTitle();
-        String location = foundItem.getLocationName();
-        try {
-            notificationService.send(lostItem.getReporter(), new SendNotificationCommand(
-                    "분실물 발견",
-                    "회원님이 등록한 %s와 유사한 물건이 %s에서 발견됐어요.".formatted(title, location),
-                    MatchFoundPayload.of(lostItem, match)));
-            return true;
-        } catch (FirebaseMessagingException e) {
-            log.error("FCM 전송 실패 (matchId: {}): {}", match.getId(), e.getMessage());
-            return false;
-        } catch (DataNotFoundException e) {
-            // FCM 토큰 없는 유저
-            log.warn("FCM 토큰 없음 (matchId: {}, userId: {})", match.getId(), lostItem.getReporter().getId());
-            return false;
         }
     }
 
