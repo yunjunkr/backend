@@ -40,3 +40,7 @@ http/test/
 /uploads/**
 !/uploads/**/
 !/uploads/**/.gitkeep
+/storage/**
+
+### Mac ###
+.DS_Store

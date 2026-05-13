@@ -2,11 +2,7 @@ package com.zoopick.server.service;
 
 import com.zoopick.server.config.FastApiProperties;
 import com.zoopick.server.dto.cctv.*;
-import com.zoopick.server.entity.CctvDetection;
-import com.zoopick.server.entity.CctvVideo;
-import com.zoopick.server.entity.CctvVideoProgress;
-import com.zoopick.server.entity.Room;
-import com.zoopick.server.entity.VideoAnalysisStatus;
+import com.zoopick.server.entity.*;
 import com.zoopick.server.exception.BadRequestException;
 import com.zoopick.server.exception.DataNotFoundException;
 import com.zoopick.server.repository.CctvDetectionRepository;
@@ -20,9 +16,15 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -44,6 +46,9 @@ public class CctvService {
 
     @Value("${zoopick.cctv.snapshot-dir}")
     private String snapshotBasePath;
+
+    @Value("${zoopick.cctv.storage-absolute-dir}")
+    private String storageDir;
 
     @Transactional
     public Long createVideo(CctvVideoCreateRequest request) {
@@ -236,5 +241,56 @@ public class CctvService {
     }
 
     public record DetectionRegisterResult(boolean duplicate, Long detectionDbId) {
+    }
+
+    @Transactional(readOnly = true)
+    public List<GetCctvVideoResponse> getCctvVideos() {
+        return cctvVideoRepository.findAllCctvVideosWithProgress();
+    }
+
+    @Transactional(readOnly = true)
+    public List<GetAllDetectionResponse> getAllCctvDetection() {
+        return cctvDetectionRepository.findAllByOrderByDetectedAtAsc().stream()
+                .map(entity -> new GetAllDetectionResponse(
+                        entity.getId(),
+                        entity.getCctvVideo().getId(),
+                        entity.getDetectedAt(),
+                        entity.getDetectedCategory(),
+                        entity.getDetectedColor(),
+                        entity.getReviewStatus()
+                ))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public GetDetectionByIdResponse getCctvDetectionById(Long detectionId) {
+        CctvDetection entity = cctvDetectionRepository.findById(detectionId)
+                .orElseThrow(() -> DataNotFoundException.from("CCTV 물품 정보", detectionId));
+
+        return new GetDetectionByIdResponse(
+                entity.getId(),
+                entity.getCctvVideo().getId(),
+                entity.getDetectedAt(),
+                entity.getDetectedCategory(),
+                entity.getDetectedColor(),
+                entity.getEmbedding(),
+                entity.getItemSnapshotUrl(),
+                entity.getMomentSnapshotUrl(),
+                entity.getReviewStatus(),
+                entity.getReviewedAt(),
+                entity.getCreatedAt()
+        );
+    }
+
+    public String uploadVideo(MultipartFile file) throws IOException {
+        Path dir = Paths.get(storageDir, "cctv", "videos");
+        Files.createDirectories(dir);
+
+        String filename = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        Path target = dir.resolve(filename);
+        file.transferTo(target);
+
+        //return target.toAbsolutePath().toString(); 절대경로 반환
+        return "backend/storage/cctv/videos/" + filename; // 상대경로
     }
 }
