@@ -8,7 +8,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
-    @Value("${zoopick.cctv.snapshot-absolute-dir}")
+    @Value("${zoopick.cctv.storage-absolute-dir}")
     private String storagePath;
 
     @Override

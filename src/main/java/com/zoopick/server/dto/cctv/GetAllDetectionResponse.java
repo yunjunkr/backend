@@ -15,6 +15,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class GetAllDetectionResponse {
     private Long id;
+    @JsonProperty("video_id")
+    private Long videoId;
     @JsonProperty("detected_at")
     private LocalDateTime detectedAt;
     @JsonProperty("detected_category")

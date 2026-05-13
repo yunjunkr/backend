@@ -11,7 +11,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @Tag(name = "CCTV API", description = "CCTV 영상 등록 및 분석 큐 관리")
@@ -105,5 +107,11 @@ public class CctvController {
     public ResponseEntity<CommonResponse<GetDetectionByIdResponse>> getDetection(@PathVariable Long id) {
         GetDetectionByIdResponse response = cctvService.getCctvDetectionById(id);
         return ResponseEntity.ok(CommonResponse.success(response));
+    }
+
+    @PostMapping("/upload")
+    public ResponseEntity<CommonResponse<String>> uploadVideo(@RequestParam("file") MultipartFile file) throws IOException {
+        String path = cctvService.uploadVideo(file);
+        return ResponseEntity.ok(CommonResponse.success(path));
     }
 }

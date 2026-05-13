@@ -25,6 +25,7 @@ public interface CctvVideoRepository extends JpaRepository<CctvVideo, Long> {
     )
     FROM CctvVideo v
     LEFT JOIN CctvVideoProgress p ON v.id = p.cctvVideo.id
+    ORDER BY v.id DESC
 """)
     List<GetCctvVideoResponse> findAllCctvVideosWithProgress();
 }

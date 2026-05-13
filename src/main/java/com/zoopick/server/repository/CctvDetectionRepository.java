@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface CctvDetectionRepository extends JpaRepository<CctvDetection, Long> {
-    List<CctvDetection> findAllByOrderByDetectedAtDesc();
+    List<CctvDetection> findAllByOrderByDetectedAtAsc();
 }

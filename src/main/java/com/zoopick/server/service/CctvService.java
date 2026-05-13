@@ -16,7 +16,12 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -41,6 +46,9 @@ public class CctvService {
 
     @Value("${zoopick.cctv.snapshot-dir}")
     private String snapshotBasePath;
+
+    @Value("${zoopick.cctv.storage-absolute-dir}")
+    private String storageDir;
 
     @Transactional
     public Long createVideo(CctvVideoCreateRequest request) {
@@ -242,9 +250,10 @@ public class CctvService {
 
     @Transactional(readOnly = true)
     public List<GetAllDetectionResponse> getAllCctvDetection() {
-        return cctvDetectionRepository.findAllByOrderByDetectedAtDesc().stream()
+        return cctvDetectionRepository.findAllByOrderByDetectedAtAsc().stream()
                 .map(entity -> new GetAllDetectionResponse(
                         entity.getId(),
+                        entity.getCctvVideo().getId(),
                         entity.getDetectedAt(),
                         entity.getDetectedCategory(),
                         entity.getDetectedColor(),
@@ -271,5 +280,17 @@ public class CctvService {
                 entity.getReviewedAt(),
                 entity.getCreatedAt()
         );
+    }
+
+    public String uploadVideo(MultipartFile file) throws IOException {
+        Path dir = Paths.get(storageDir, "cctv", "videos");
+        Files.createDirectories(dir);
+
+        String filename = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        Path target = dir.resolve(filename);
+        file.transferTo(target);
+
+        //return target.toAbsolutePath().toString(); 절대경로 반환
+        return "backend/storage/cctv/videos/" + filename; // 상대경로
     }
 }

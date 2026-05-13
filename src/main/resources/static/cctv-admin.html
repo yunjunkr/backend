@@ -1,784 +1,1190 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CCTV 관리자 콘솔</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@300;400;500;600&display=swap');
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CCTV 관리자 콘솔</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@300;400;500;600&display=swap');
 
-  :root {
-    --bg: #0a0c0f;
-    --surface: #111318;
-    --surface2: #1a1d24;
-    --border: #252830;
-    --border-bright: #353840;
-    --accent: #00e5a0;
-    --accent-dim: rgba(0, 229, 160, 0.12);
-    --accent-dim2: rgba(0, 229, 160, 0.06);
-    --warn: #f59e0b;
-    --warn-dim: rgba(245, 158, 11, 0.12);
-    --danger: #ef4444;
-    --danger-dim: rgba(239, 68, 68, 0.12);
-    --info: #3b82f6;
-    --info-dim: rgba(59, 130, 246, 0.12);
-    --text: #e2e8f0;
-    --text-muted: #64748b;
-    --text-dim: #94a3b8;
-    --mono: 'IBM Plex Mono', monospace;
-    --sans: 'IBM Plex Sans KR', sans-serif;
-  }
+    :root {
+      --bg: #0a0c0f;
+      --surface: #111318;
+      --surface2: #1a1d24;
+      --border: #252830;
+      --border-bright: #353840;
+      --accent: #00e5a0;
+      --accent-dim: rgba(0, 229, 160, 0.12);
+      --accent-dim2: rgba(0, 229, 160, 0.06);
+      --warn: #f59e0b;
+      --warn-dim: rgba(245, 158, 11, 0.12);
+      --danger: #ef4444;
+      --danger-dim: rgba(239, 68, 68, 0.12);
+      --info: #3b82f6;
+      --info-dim: rgba(59, 130, 246, 0.12);
+      --text: #e2e8f0;
+      --text-muted: #64748b;
+      --text-dim: #94a3b8;
+      --mono: 'IBM Plex Mono', monospace;
+      --sans: 'IBM Plex Sans KR', sans-serif;
+    }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    min-height: 100vh;
-    font-size: 14px;
-  }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+      font-size: 14px;
+    }
 
-  /* Layout */
-  .layout {
-    display: grid;
-    grid-template-columns: 220px 1fr;
-    grid-template-rows: 52px 1fr;
-    min-height: 100vh;
-  }
+    /* Layout */
+    .layout {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      grid-template-rows: 52px 1fr;
+      min-height: 100vh;
+    }
 
-  /* Header */
-  header {
-    grid-column: 1 / -1;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    padding: 0 24px;
-    gap: 12px;
-  }
-  .logo {
-    font-family: var(--mono);
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--accent);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-  .logo span { color: var(--text-muted); }
-  .header-badge {
-    margin-left: auto;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text-muted);
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    padding: 3px 10px;
-    border-radius: 3px;
-  }
-  .status-dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 6px var(--accent);
-    animation: pulse 2s infinite;
-    display: inline-block;
-    margin-right: 6px;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-  }
+    /* Header */
+    header {
+      grid-column: 1 / -1;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 12px;
+    }
 
-  /* Sidebar */
-  nav {
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    padding: 16px 0;
-  }
-  .nav-section {
-    padding: 8px 16px 4px;
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--text-muted);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-  .nav-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    cursor: pointer;
-    font-size: 13px;
-    color: var(--text-dim);
-    border-left: 2px solid transparent;
-    transition: all 0.15s;
-  }
-  .nav-item:hover { color: var(--text); background: var(--accent-dim2); }
-  .nav-item.active {
-    color: var(--accent);
-    border-left-color: var(--accent);
-    background: var(--accent-dim2);
-  }
-  .nav-icon { font-size: 15px; width: 18px; text-align: center; }
+    .logo {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
 
-  /* Main */
-  main {
-    background: var(--bg);
-    overflow-y: auto;
-    padding: 28px;
-  }
+    .logo span {
+      color: var(--text-muted);
+    }
 
-  /* Page */
-  .page { display: none; }
-  .page.active { display: block; }
+    .header-badge {
+      margin-left: auto;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 3px 10px;
+      border-radius: 3px;
+    }
 
-  .page-title {
-    font-family: var(--mono);
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 6px;
-  }
-  .page-desc {
-    font-size: 13px;
-    color: var(--text-muted);
-    margin-bottom: 28px;
-  }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 6px var(--accent);
+      animation: pulse 2s infinite;
+      display: inline-block;
+      margin-right: 6px;
+    }
 
-  /* Card */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 24px;
-    margin-bottom: 20px;
-  }
-  .card-title {
-    font-family: var(--mono);
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--accent);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .card-title::before {
-    content: '';
-    display: block;
-    width: 3px; height: 14px;
-    background: var(--accent);
-    border-radius: 2px;
-  }
+    @keyframes pulse {
 
-  /* Form */
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-  }
-  .form-group { display: flex; flex-direction: column; gap: 6px; }
-  .form-group.full { grid-column: 1 / -1; }
-  label {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text-muted);
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
-  label .required { color: var(--danger); margin-left: 2px; }
-  input, select {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 9px 12px;
-    border-radius: 4px;
-    font-family: var(--mono);
-    font-size: 13px;
-    outline: none;
-    transition: border-color 0.15s;
-    width: 100%;
-  }
-  input:focus, select:focus { border-color: var(--accent); }
-  input::placeholder { color: var(--text-muted); }
-  select option { background: var(--surface2); }
+      0%,
+      100% {
+        opacity: 1;
+      }
 
-  /* Button */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 9px 20px;
-    border-radius: 4px;
-    border: none;
-    font-family: var(--mono);
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .btn-primary {
-    background: var(--accent);
-    color: #000;
-  }
-  .btn-primary:hover { background: #00ffb3; }
-  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
-  .btn-secondary {
-    background: var(--surface2);
-    color: var(--text-dim);
-    border: 1px solid var(--border);
-  }
-  .btn-secondary:hover { border-color: var(--border-bright); color: var(--text); }
-  .btn-warn {
-    background: var(--warn-dim);
-    color: var(--warn);
-    border: 1px solid rgba(245, 158, 11, 0.3);
-  }
-  .btn-warn:hover { background: rgba(245, 158, 11, 0.2); }
-  .btn-sm { padding: 5px 12px; font-size: 11px; }
+      50% {
+        opacity: 0.4;
+      }
+    }
 
-  /* Response box */
-  .response-box {
-    display: none;
-    margin-top: 16px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    overflow: hidden;
-  }
-  .response-box.show { display: block; }
-  .response-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 14px;
-    border-bottom: 1px solid var(--border);
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text-muted);
-  }
-  .response-status {
-    font-size: 12px;
-    font-weight: 600;
-    padding: 2px 8px;
-    border-radius: 3px;
-  }
-  .status-ok { background: var(--accent-dim); color: var(--accent); }
-  .status-err { background: var(--danger-dim); color: var(--danger); }
-  .response-body {
-    padding: 14px;
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--text-dim);
-    white-space: pre-wrap;
-    max-height: 280px;
-    overflow-y: auto;
-    line-height: 1.7;
-  }
+    /* Sidebar */
+    nav {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 16px 0;
+    }
 
-  /* Table */
-  .table-wrap { overflow-x: auto; }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-  }
-  th {
-    font-family: var(--mono);
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-muted);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--border);
-    text-align: left;
-    white-space: nowrap;
-  }
-  td {
-    padding: 11px 14px;
-    border-bottom: 1px solid var(--border);
-    color: var(--text-dim);
-    font-size: 13px;
-  }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: var(--accent-dim2); }
-  .mono { font-family: var(--mono); font-size: 12px; }
+    .nav-section {
+      padding: 8px 16px 4px;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
 
-  /* Badge */
-  .badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 3px;
-    font-family: var(--mono);
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-  }
-  .badge-pending { background: var(--warn-dim); color: var(--warn); }
-  .badge-processing { background: var(--info-dim); color: var(--info); }
-  .badge-done { background: var(--accent-dim); color: var(--accent); }
-  .badge-failed { background: var(--danger-dim); color: var(--danger); }
-  .badge-queued { background: rgba(139, 92, 246, 0.12); color: #a78bfa; }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text-dim);
+      border-left: 2px solid transparent;
+      transition: all 0.15s;
+    }
 
-  /* Actions row */
-  .actions { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+    .nav-item:hover {
+      color: var(--text);
+      background: var(--accent-dim2);
+    }
 
-  /* ID input row */
-  .id-row {
-    display: flex;
-    gap: 10px;
-    align-items: flex-end;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-  }
-  .id-row .form-group { min-width: 180px; }
+    .nav-item.active {
+      color: var(--accent);
+      border-left-color: var(--accent);
+      background: var(--accent-dim2);
+    }
 
-  /* Loading */
-  .loading {
-    display: none;
-    align-items: center;
-    gap: 8px;
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--text-muted);
-  }
-  .loading.show { display: flex; }
-  .spinner {
-    width: 14px; height: 14px;
-    border: 2px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+    .nav-icon {
+      font-size: 15px;
+      width: 18px;
+      text-align: center;
+    }
 
-  /* Empty */
-  .empty {
-    text-align: center;
-    padding: 48px 0;
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--text-muted);
-  }
+    /* Main */
+    main {
+      background: var(--bg);
+      overflow-y: auto;
+      padding: 28px;
+    }
 
-  /* Detail modal */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    z-index: 100;
-    align-items: center;
-    justify-content: center;
-  }
-  .modal-overlay.show { display: flex; }
-  .modal {
-    background: var(--surface);
-    border: 1px solid var(--border-bright);
-    border-radius: 8px;
-    width: 640px;
-    max-width: 95vw;
-    max-height: 80vh;
-    overflow-y: auto;
-  }
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 18px 24px;
-    border-bottom: 1px solid var(--border);
-  }
-  .modal-header h3 { font-family: var(--mono); font-size: 13px; color: var(--accent); }
-  .modal-close {
-    background: none; border: none;
-    color: var(--text-muted); font-size: 18px;
-    cursor: pointer; line-height: 1;
-  }
-  .modal-close:hover { color: var(--text); }
-  .modal-body { padding: 24px; }
-  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .detail-item { display: flex; flex-direction: column; gap: 4px; }
-  .detail-label {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--text-muted);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-  .detail-value {
-    font-family: var(--mono);
-    font-size: 13px;
-    color: var(--text);
-  }
-  .detail-item.full { grid-column: 1 / -1; }
-  .snapshot-row { display: flex; gap: 12px; margin-top: 8px; }
-  .snapshot-box {
-    flex: 1;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 8px;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text-muted);
-    word-break: break-all;
-  }
-  .snapshot-img-wrap {
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-  .snapshot-img-item {
-    flex: 1;
-    min-width: 200px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .snapshot-img-item img {
-    width: 100%;
-    border-radius: 4px;
-    border: 1px solid var(--border);
-    object-fit: cover;
-    max-height: 200px;
-    background: var(--surface2);
-  }
-  .snapshot-img-item .snapshot-url {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--text-muted);
-    word-break: break-all;
-    line-height: 1.5;
-  }
-  .snapshot-no-img {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--text-muted);
-    padding: 20px;
-    text-align: center;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-  }
+    /* Page */
+    .page {
+      display: none;
+    }
 
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 5px; height: 5px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 3px; }
-</style>
+    .page.active {
+      display: block;
+    }
+
+    .page-title {
+      font-family: var(--mono);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .page-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+    }
+
+    /* Card */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-title::before {
+      content: '';
+      display: block;
+      width: 3px;
+      height: 14px;
+      background: var(--accent);
+      border-radius: 2px;
+    }
+
+    /* Form */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    label .required {
+      color: var(--danger);
+      margin-left: 2px;
+    }
+
+    input,
+    select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 9px 12px;
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.15s;
+      width: 100%;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--accent);
+    }
+
+    input::placeholder {
+      color: var(--text-muted);
+    }
+
+    select option {
+      background: var(--surface2);
+    }
+
+    /* Button */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 20px;
+      border-radius: 4px;
+      border: none;
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #000;
+    }
+
+    .btn-primary:hover {
+      background: #00ffb3;
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: var(--surface2);
+      color: var(--text-dim);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--border-bright);
+      color: var(--text);
+    }
+
+    .btn-warn {
+      background: var(--warn-dim);
+      color: var(--warn);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .btn-warn:hover {
+      background: rgba(245, 158, 11, 0.2);
+    }
+
+    .btn-sm {
+      padding: 5px 12px;
+      font-size: 11px;
+    }
+
+    /* Response box */
+    .response-box {
+      display: none;
+      margin-top: 16px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .response-box.show {
+      display: block;
+    }
+
+    .response-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .response-status {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 3px;
+    }
+
+    .status-ok {
+      background: var(--accent-dim);
+      color: var(--accent);
+    }
+
+    .status-err {
+      background: var(--danger-dim);
+      color: var(--danger);
+    }
+
+    .response-body {
+      padding: 14px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-dim);
+      white-space: pre-wrap;
+      max-height: 280px;
+      overflow-y: auto;
+      line-height: 1.7;
+    }
+
+    /* Table */
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-dim);
+      font-size: 13px;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: var(--accent-dim2);
+    }
+
+    .mono {
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    /* Badge */
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+
+    .badge-pending {
+      background: var(--warn-dim);
+      color: var(--warn);
+    }
+
+    .badge-processing {
+      background: var(--info-dim);
+      color: var(--info);
+    }
+
+    .badge-done {
+      background: var(--accent-dim);
+      color: var(--accent);
+    }
+
+    .badge-failed {
+      background: var(--danger-dim);
+      color: var(--danger);
+    }
+
+    .badge-queued {
+      background: rgba(139, 92, 246, 0.12);
+      color: #a78bfa;
+    }
+
+    /* Actions row */
+    .actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    /* ID input row */
+    .id-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .id-row .form-group {
+      min-width: 180px;
+    }
+
+    /* Loading */
+    .loading {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .loading.show {
+      display: flex;
+    }
+
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Empty */
+    .empty {
+      text-align: center;
+      padding: 48px 0;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Detail modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border-bright);
+      border-radius: 8px;
+      width: 640px;
+      max-width: 95vw;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-header h3 {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--accent);
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 18px;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .modal-close:hover {
+      color: var(--text);
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .detail-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .detail-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .detail-value {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .detail-item.full {
+      grid-column: 1 / -1;
+    }
+
+    .snapshot-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .snapshot-box {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 8px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      word-break: break-all;
+    }
+
+    .snapshot-img-wrap {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .snapshot-img-item {
+      flex: 1;
+      min-width: 200px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .snapshot-img-item img {
+      width: 100%;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      object-fit: cover;
+      max-height: 200px;
+      background: var(--surface2);
+    }
+
+    .snapshot-img-item .snapshot-url {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      word-break: break-all;
+      line-height: 1.5;
+    }
+
+    .snapshot-no-img {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-muted);
+      padding: 20px;
+      text-align: center;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+    }
+
+    /* Upload */
+    .upload-area {
+      border: 2px dashed var(--border-bright);
+      border-radius: 6px;
+      padding: 36px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--surface2);
+    }
+
+    .upload-area:hover,
+    .upload-area.dragover {
+      border-color: var(--accent);
+      background: var(--accent-dim2);
+    }
+
+    .upload-area.uploaded {
+      border-color: var(--accent);
+      border-style: solid;
+    }
+
+    .upload-icon {
+      font-size: 28px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .upload-text {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+    }
+
+    .upload-sub {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Group */
+    .group-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      cursor: pointer;
+      margin-bottom: 4px;
+      transition: border-color 0.15s;
+      user-select: none;
+    }
+
+    .group-header:hover {
+      border-color: var(--accent);
+    }
+
+    .group-header.open {
+      border-color: var(--accent);
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      margin-bottom: 0;
+    }
+
+    .group-video-id {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .group-count {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      border-radius: 3px;
+    }
+
+    .group-arrow {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--text-muted);
+      transition: transform 0.2s;
+    }
+
+    .group-header.open .group-arrow {
+      transform: rotate(180deg);
+    }
+
+    .group-body {
+      display: none;
+      border: 1px solid var(--accent);
+      border-top: none;
+      border-bottom-left-radius: 5px;
+      border-bottom-right-radius: 5px;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+
+    .group-body.open {
+      display: block;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-bright);
+      border-radius: 3px;
+    }
+  </style>
 </head>
+
 <body>
 
-<div class="layout">
-  <header>
-    <div class="logo">ZooPick <span>/</span> CCTV Console</div>
-    <div class="header-badge"><span class="status-dot"></span>localhost:8080</div>
-  </header>
+  <div class="layout">
+    <header>
+      <div class="logo">ZooPick <span>/</span> CCTV Console</div>
+      <div class="header-badge"><span class="status-dot"></span>localhost:8080</div>
+    </header>
 
-  <nav>
-    <div class="nav-section">영상</div>
-    <div class="nav-item active" onclick="showPage('register')">
-      <span class="nav-icon">＋</span> 영상 등록
-    </div>
-    <div class="nav-item" onclick="showPage('requeue')">
-      <span class="nav-icon">↺</span> 재큐잉
-    </div>
-    <div class="nav-item" onclick="showPage('videos')">
-      <span class="nav-icon">▤</span> 영상 목록
-    </div>
-    <div class="nav-section" style="margin-top:12px">물품</div>
-    <div class="nav-item" onclick="showPage('detections')">
-      <span class="nav-icon">◈</span> 물품 목록
-    </div>
-    <div class="nav-item" onclick="showPage('detection-detail')">
-      <span class="nav-icon">◉</span> 물품 상세
-    </div>
-  </nav>
+    <nav>
+      <div class="nav-section">영상</div>
+      <div class="nav-item active" onclick="showPage('register')">
+        <span class="nav-icon">＋</span> 영상 등록
+      </div>
+      <div class="nav-item" onclick="showPage('requeue')">
+        <span class="nav-icon">↺</span> 재큐잉
+      </div>
+      <div class="nav-item" onclick="showPage('videos')">
+        <span class="nav-icon">▤</span> 영상 목록
+      </div>
+      <div class="nav-section" style="margin-top:12px">물품</div>
+      <div class="nav-item" onclick="showPage('detections')">
+        <span class="nav-icon">◈</span> 물품 목록
+      </div>
+      <div class="nav-item" onclick="showPage('detection-detail')">
+        <span class="nav-icon">◉</span> 물품 상세
+      </div>
+    </nav>
 
-  <main>
+    <main>
 
-    <!-- 1. 영상 등록 -->
-    <div id="page-register" class="page active">
-      <div class="page-title">영상 등록 + 분석 큐 등록</div>
-      <div class="page-desc">POST /api/cctv/videos — CCTV 영상 메타데이터를 등록하고 즉시 분석 큐에 추가합니다.</div>
-      <div class="card">
-        <div class="card-title">Request Body</div>
-        <div class="form-grid">
-          <div class="form-group">
-            <label>room_id <span class="required">*</span></label>
-            <input type="number" id="reg-roomId" placeholder="예: 101">
+      <!-- 1. 영상 등록 -->
+      <div id="page-register" class="page active">
+        <div class="page-title">영상 등록 + 분석 큐 등록</div>
+        <div class="page-desc">POST /api/cctv/videos — CCTV 영상 메타데이터를 등록하고 즉시 분석 큐에 추가합니다.</div>
+        <div class="card">
+          <div class="card-title">영상 파일 업로드</div>
+          <div class="upload-area" id="upload-area" onclick="document.getElementById('reg-file').click()"
+            ondragover="onDragOver(event)" ondrop="onDrop(event)">
+            <div class="upload-icon">▲</div>
+            <div class="upload-text" id="upload-text">클릭하거나 파일을 드래그하세요</div>
+            <div class="upload-sub">mp4, avi, mov 등 영상 파일</div>
+            <input type="file" id="reg-file" accept="video/*" style="display:none" onchange="onFileSelect(event)">
           </div>
-          <div class="form-group">
-            <label>recorded_at <span class="required">*</span></label>
-            <input type="datetime-local" id="reg-recordedAt">
-          </div>
-          <div class="form-group">
-            <label>duration_seconds <span class="required">*</span></label>
-            <input type="number" id="reg-durationSeconds" placeholder="예: 3600">
-          </div>
-          <div class="form-group">
-            <label>video_url <span class="required">*</span></label>
-            <input type="text" id="reg-videoUrl" placeholder="예: https://...">
+          <div class="loading" id="upload-loading" style="margin-top:12px">
+            <div class="spinner"></div>업로드 중...
           </div>
         </div>
-        <div style="margin-top:20px; display:flex; gap:12px; align-items:center">
-          <button class="btn btn-primary" onclick="registerVideo()">▶ 등록 + 큐 등록</button>
-          <div class="loading" id="reg-loading"><div class="spinner"></div>요청 중...</div>
-        </div>
-        <div class="response-box" id="reg-response">
-          <div class="response-header">
-            <span>RESPONSE</span>
-            <span class="response-status" id="reg-status"></span>
+        <div class="card">
+          <div class="card-title">Request Body</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>room_id <span class="required">*</span></label>
+              <input type="number" id="reg-roomId" placeholder="예: 101">
+            </div>
+            <div class="form-group">
+              <label>recorded_at <span class="required">*</span></label>
+              <input type="datetime-local" id="reg-recordedAt">
+            </div>
+            <div class="form-group">
+              <label>duration_seconds <span class="required">*</span> <span
+                  style="color:var(--accent);font-size:10px">AUTO</span></label>
+              <input type="number" id="reg-durationSeconds" placeholder="파일 선택 시 자동 입력">
+            </div>
+            <div class="form-group">
+              <label>video_url <span class="required">*</span> <span
+                  style="color:var(--accent);font-size:10px">AUTO</span></label>
+              <input type="text" id="reg-videoUrl" placeholder="파일 업로드 시 자동 입력">
+            </div>
           </div>
-          <div class="response-body" id="reg-body"></div>
+          <div style="margin-top:20px; display:flex; gap:12px; align-items:center">
+            <button class="btn btn-primary" onclick="registerVideo()">▶ 등록 + 큐 등록</button>
+            <div class="loading" id="reg-loading">
+              <div class="spinner"></div>요청 중...
+            </div>
+          </div>
+          <div class="response-box" id="reg-response">
+            <div class="response-header">
+              <span>RESPONSE</span>
+              <span class="response-status" id="reg-status"></span>
+            </div>
+            <div class="response-body" id="reg-body"></div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- 2. 재큐잉 -->
-    <div id="page-requeue" class="page">
-      <div class="page-title">기존 영상 재큐잉</div>
-      <div class="page-desc">POST /api/cctv/enqueue/{videoId} — 분석 실패(FAILED) 후 재시도하거나 우선순위 변경 시 사용합니다.</div>
-      <div class="card">
-        <div class="card-title">Path Variable</div>
-        <div class="form-grid">
-          <div class="form-group">
-            <label>videoId <span class="required">*</span></label>
-            <input type="number" id="enq-videoId" placeholder="예: 1">
+      <!-- 2. 재큐잉 -->
+      <div id="page-requeue" class="page">
+        <div class="page-title">기존 영상 재큐잉</div>
+        <div class="page-desc">POST /api/cctv/enqueue/{videoId} — 분석 실패(FAILED) 후 재시도하거나 우선순위 변경 시 사용합니다.</div>
+        <div class="card">
+          <div class="card-title">Path Variable</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>videoId <span class="required">*</span></label>
+              <input type="number" id="enq-videoId" placeholder="예: 1">
+            </div>
+          </div>
+          <div style="margin-top:20px; display:flex; gap:12px; align-items:center">
+            <button class="btn btn-primary" onclick="enqueueVideo()">↺ 재큐잉</button>
+            <div class="loading" id="enq-loading">
+              <div class="spinner"></div>요청 중...
+            </div>
+          </div>
+          <div class="response-box" id="enq-response">
+            <div class="response-header">
+              <span>RESPONSE</span>
+              <span class="response-status" id="enq-status"></span>
+            </div>
+            <div class="response-body" id="enq-body"></div>
           </div>
         </div>
-        <div style="margin-top:20px; display:flex; gap:12px; align-items:center">
-          <button class="btn btn-primary" onclick="enqueueVideo()">↺ 재큐잉</button>
-          <div class="loading" id="enq-loading"><div class="spinner"></div>요청 중...</div>
-        </div>
-        <div class="response-box" id="enq-response">
-          <div class="response-header">
-            <span>RESPONSE</span>
-            <span class="response-status" id="enq-status"></span>
+      </div>
+
+      <!-- 3. 영상 목록 -->
+      <div id="page-videos" class="page">
+        <div class="page-title">CCTV 분석 결과 전체 조회</div>
+        <div class="page-desc">GET /api/cctv/videos</div>
+        <div class="card">
+          <div class="actions">
+            <button class="btn btn-primary" onclick="fetchVideos()">▶ 조회</button>
+            <div class="loading" id="vid-loading">
+              <div class="spinner"></div>로딩 중...
+            </div>
           </div>
-          <div class="response-body" id="enq-body"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 3. 영상 목록 -->
-    <div id="page-videos" class="page">
-      <div class="page-title">CCTV 분석 결과 전체 조회</div>
-      <div class="page-desc">GET /api/cctv/videos</div>
-      <div class="card">
-        <div class="actions">
-          <button class="btn btn-primary" onclick="fetchVideos()">▶ 조회</button>
-          <div class="loading" id="vid-loading"><div class="spinner"></div>로딩 중...</div>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>room_id</th>
-                <th>status</th>
-                <th>recorded_at</th>
-                <th>duration</th>
-                <th>analyzed</th>
-                <th>started_at</th>
-                <th>last_updated_at</th>
-              </tr>
-            </thead>
-            <tbody id="videos-tbody">
-              <tr><td colspan="8"><div class="empty">조회 버튼을 눌러주세요</div></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- 4. 물품 목록 -->
-    <div id="page-detections" class="page">
-      <div class="page-title">CCTV 분석 물품 전체 조회</div>
-      <div class="page-desc">GET /api/cctv/detections</div>
-      <div class="card">
-        <div class="actions">
-          <button class="btn btn-primary" onclick="fetchDetections()">▶ 조회</button>
-          <div class="loading" id="det-loading"><div class="spinner"></div>로딩 중...</div>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>detected_at</th>
-                <th>detected_category</th>
-                <th>detected_color</th>
-                <th>review_status</th>
-                <th>상세</th>
-              </tr>
-            </thead>
-            <tbody id="detections-tbody">
-              <tr><td colspan="6"><div class="empty">조회 버튼을 눌러주세요</div></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- 5. 물품 상세 -->
-    <div id="page-detection-detail" class="page">
-      <div class="page-title">CCTV 분석 물품 상세 조회</div>
-      <div class="page-desc">GET /api/cctv/detections/{id} — embedding 제외</div>
-      <div class="card">
-        <div class="card-title">Path Variable</div>
-        <div class="id-row">
-          <div class="form-group">
-            <label>detection id <span class="required">*</span></label>
-            <input type="number" id="det-id" placeholder="예: 1">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>room_id</th>
+                  <th>status</th>
+                  <th>recorded_at</th>
+                  <th>duration</th>
+                  <th>analyzed</th>
+                  <th>started_at</th>
+                  <th>estimated_completion_at</th>
+                  <th>last_updated_at</th>
+                </tr>
+              </thead>
+              <tbody id="videos-tbody">
+                <tr>
+                  <td colspan="9">
+                    <div class="empty">조회 버튼을 눌러주세요</div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-          <button class="btn btn-primary" onclick="fetchDetectionById()">▶ 조회</button>
-          <div class="loading" id="detid-loading"><div class="spinner"></div>로딩 중...</div>
-        </div>
-        <div id="detection-detail-content" style="display:none">
-          <div class="detail-grid" id="detection-detail-grid"></div>
-        </div>
-        <div class="response-box" id="detid-response">
-          <div class="response-header">
-            <span>RESPONSE</span>
-            <span class="response-status" id="detid-status"></span>
-          </div>
-          <div class="response-body" id="detid-body"></div>
         </div>
       </div>
-    </div>
 
-  </main>
-</div>
+      <!-- 4. 물품 목록 -->
+      <div id="page-detections" class="page">
+        <div class="page-title">CCTV 분석 물품 전체 조회</div>
+        <div class="page-desc">GET /api/cctv/detections — video_id 기준으로 그룹핑</div>
+        <div class="card">
+          <div class="actions">
+            <button class="btn btn-primary" onclick="fetchDetections()">▶ 조회</button>
+            <div class="loading" id="det-loading">
+              <div class="spinner"></div>로딩 중...
+            </div>
+          </div>
+          <div id="detections-grouped"></div>
+        </div>
+      </div>
 
-<!-- Detail Modal (물품 목록에서 열기) -->
-<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
-  <div class="modal">
-    <div class="modal-header">
-      <h3>물품 상세 — detection #{<span id="modal-id"></span>}</h3>
-      <button class="modal-close" onclick="closeModalDirect()">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="detail-grid" id="modal-detail-grid"></div>
+      <!-- 5. 물품 상세 -->
+      <div id="page-detection-detail" class="page">
+        <div class="page-title">CCTV 분석 물품 상세 조회</div>
+        <div class="page-desc">GET /api/cctv/detections/{id} — embedding 제외</div>
+        <div class="card">
+          <div class="card-title">Path Variable</div>
+          <div class="id-row">
+            <div class="form-group">
+              <label>detection id <span class="required">*</span></label>
+              <input type="number" id="det-id" placeholder="예: 1">
+            </div>
+            <button class="btn btn-primary" onclick="fetchDetectionById()">▶ 조회</button>
+            <div class="loading" id="detid-loading">
+              <div class="spinner"></div>로딩 중...
+            </div>
+          </div>
+          <div id="detection-detail-content" style="display:none">
+            <div class="detail-grid" id="detection-detail-grid"></div>
+          </div>
+          <div class="response-box" id="detid-response">
+            <div class="response-header">
+              <span>RESPONSE</span>
+              <span class="response-status" id="detid-status"></span>
+            </div>
+            <div class="response-body" id="detid-body"></div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Detail Modal (물품 목록에서 열기) -->
+  <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>물품 상세 — detection #{<span id="modal-id"></span>}</h3>
+        <button class="modal-close" onclick="closeModalDirect()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-grid" id="modal-detail-grid"></div>
+      </div>
     </div>
   </div>
-</div>
 
-<script>
-  const BASE = 'http://localhost:8080';
+  <script>
+    const BASE = 'http://localhost:8080';
 
-  // --- Nav ---
-  function showPage(name) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.getElementById('page-' + name).classList.add('active');
-    event.currentTarget.classList.add('active');
-  }
-
-  // --- Helpers ---
-  function showLoading(id, show) {
-    const el = document.getElementById(id);
-    el.classList.toggle('show', show);
-  }
-
-  function showResponse(prefix, status, data) {
-    const box = document.getElementById(prefix + '-response');
-    const statusEl = document.getElementById(prefix + '-status');
-    const bodyEl = document.getElementById(prefix + '-body');
-    box.classList.add('show');
-    const isOk = status >= 200 && status < 300;
-    statusEl.textContent = status;
-    statusEl.className = 'response-status ' + (isOk ? 'status-ok' : 'status-err');
-    bodyEl.textContent = JSON.stringify(data, null, 2);
-  }
-
-  function statusBadge(status) {
-    if (!status) return '<span class="badge badge-pending">—</span>';
-    const map = {
-      PENDING: 'badge-pending',
-      QUEUED: 'badge-queued',
-      PROCESSING: 'badge-processing',
-      DONE: 'badge-done',
-      COMPLETED: 'badge-done',
-      FAILED: 'badge-failed',
-    };
-    const cls = map[status.toUpperCase()] || 'badge-pending';
-    return `<span class="badge ${cls}">${status}</span>`;
-  }
-
-  function fmt(v) { return v ?? '—'; }
-  function fmtDt(v) { return v ? v.replace('T', ' ').slice(0, 19) : '—'; }
-
-  // --- 1. 영상 등록 ---
-  async function registerVideo() {
-    const roomId = document.getElementById('reg-roomId').value;
-    const recordedAt = document.getElementById('reg-recordedAt').value;
-    const durationSeconds = document.getElementById('reg-durationSeconds').value;
-    const videoUrl = document.getElementById('reg-videoUrl').value;
-
-    if (!roomId || !recordedAt || !durationSeconds || !videoUrl) {
-      alert('모든 필드를 입력해주세요.');
-      return;
+    // --- Upload ---
+    function onDragOver(e) {
+      e.preventDefault();
+      document.getElementById('upload-area').classList.add('dragover');
     }
 
-    showLoading('reg-loading', true);
-    try {
-      const res = await fetch(`${BASE}/api/cctv/videos`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          room_id: Number(roomId),
-          recorded_at: recordedAt.replace('T', 'T').concat(':00').slice(0, 19),
-          duration_seconds: Number(durationSeconds),
-          video_url: videoUrl,
-        }),
-      });
-      const data = await res.json();
-      showResponse('reg', res.status, data);
-    } catch (e) {
-      showResponse('reg', 0, { error: e.message });
-    } finally {
-      showLoading('reg-loading', false);
+    function onDrop(e) {
+      e.preventDefault();
+      document.getElementById('upload-area').classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file) handleFile(file);
     }
-  }
 
-  // --- 2. 재큐잉 ---
-  async function enqueueVideo() {
-    const videoId = document.getElementById('enq-videoId').value;
-    if (!videoId) { alert('videoId를 입력해주세요.'); return; }
-
-    showLoading('enq-loading', true);
-    try {
-      const res = await fetch(`${BASE}/api/cctv/enqueue/${videoId}`, { method: 'POST' });
-      const data = await res.json();
-      showResponse('enq', res.status, data);
-    } catch (e) {
-      showResponse('enq', 0, { error: e.message });
-    } finally {
-      showLoading('enq-loading', false);
+    function onFileSelect(e) {
+      const file = e.target.files[0];
+      if (file) handleFile(file);
     }
-  }
 
-  // --- 3. 영상 목록 ---
-  async function fetchVideos() {
-    showLoading('vid-loading', true);
-    const tbody = document.getElementById('videos-tbody');
-    try {
-      const res = await fetch(`${BASE}/api/cctv/videos`);
-      const data = await res.json();
-      const list = data.data ?? data;
-      if (!list.length) {
-        tbody.innerHTML = '<tr><td colspan="8"><div class="empty">데이터 없음</div></td></tr>';
+    function handleFile(file) {
+      const fileLastModified = file.lastModified;
+
+      // duration 뽑기 + recorded_at 자동 계산 (녹화 종료 시각 - 영상 길이 = 녹화 시작 시각)
+      const video = document.createElement('video');
+      video.preload = 'metadata';
+      video.onloadedmetadata = () => {
+        URL.revokeObjectURL(video.src);
+        const durationSec = Math.round(video.duration);
+        document.getElementById('reg-durationSeconds').value = durationSec;
+
+        // lastModified(ms) - duration(ms) = 녹화 시작 시각
+        const recordedAt = new Date(fileLastModified - durationSec * 1000);
+        const offset = recordedAt.getTimezoneOffset() * 60000;
+        const localISO = new Date(recordedAt - offset).toISOString().slice(0, 16);
+        document.getElementById('reg-recordedAt').value = localISO;
+      };
+      video.src = URL.createObjectURL(file);
+
+      // 업로드
+      uploadFile(file);
+    }
+
+    async function uploadFile(file) {
+      const area = document.getElementById('upload-area');
+      const text = document.getElementById('upload-text');
+      showLoading('upload-loading', true);
+      text.textContent = `${file.name} 업로드 중...`;
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const res = await fetch(`${BASE}/api/cctv/upload`, {
+          method: 'POST',
+          body: formData,
+        });
+        const data = await res.json();
+        if (res.ok) {
+          const path = data.data ?? data;
+          document.getElementById('reg-videoUrl').value = path;
+          area.classList.add('uploaded');
+          text.textContent = `✔ ${file.name}`;
+        } else {
+          text.textContent = `✘ 업로드 실패: ${JSON.stringify(data)}`;
+        }
+      } catch (e) {
+        text.textContent = `✘ 오류: ${e.message}`;
+      } finally {
+        showLoading('upload-loading', false);
+      }
+    }
+
+    // --- Nav ---
+    function showPage(name) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.getElementById('page-' + name).classList.add('active');
+      event.currentTarget.classList.add('active');
+    }
+
+    // --- Helpers ---
+    function showLoading(id, show) {
+      const el = document.getElementById(id);
+      el.classList.toggle('show', show);
+    }
+
+    function showResponse(prefix, status, data) {
+      const box = document.getElementById(prefix + '-response');
+      const statusEl = document.getElementById(prefix + '-status');
+      const bodyEl = document.getElementById(prefix + '-body');
+      box.classList.add('show');
+      const isOk = status >= 200 && status < 300;
+      statusEl.textContent = status;
+      statusEl.className = 'response-status ' + (isOk ? 'status-ok' : 'status-err');
+      bodyEl.textContent = JSON.stringify(data, null, 2);
+    }
+
+    function statusBadge(status) {
+      if (!status) return '<span class="badge badge-pending">—</span>';
+      const map = {
+        PENDING: 'badge-pending',
+        QUEUED: 'badge-queued',
+        PROCESSING: 'badge-processing',
+        DONE: 'badge-done',
+        COMPLETED: 'badge-done',
+        FAILED: 'badge-failed',
+      };
+      const cls = map[status.toUpperCase()] || 'badge-pending';
+      return `<span class="badge ${cls}">${status}</span>`;
+    }
+
+    function fmt(v) { return v ?? '—'; }
+    function fmtDt(v) { return v ? v.replace('T', ' ').slice(0, 19) : '—'; }
+
+    // --- 1. 영상 등록 ---
+    async function registerVideo() {
+      const roomId = document.getElementById('reg-roomId').value;
+      const recordedAt = document.getElementById('reg-recordedAt').value;
+      const durationSeconds = document.getElementById('reg-durationSeconds').value;
+      const videoUrl = document.getElementById('reg-videoUrl').value;
+
+      if (!roomId || !recordedAt || !durationSeconds || !videoUrl) {
+        alert('모든 필드를 입력해주세요.');
         return;
       }
-      tbody.innerHTML = list.map(v => `
+
+      showLoading('reg-loading', true);
+      try {
+        const res = await fetch(`${BASE}/api/cctv/videos`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            room_id: Number(roomId),
+            recorded_at: recordedAt.replace('T', 'T').concat(':00').slice(0, 19),
+            duration_seconds: Number(durationSeconds),
+            video_url: videoUrl,
+          }),
+        });
+        const data = await res.json();
+        showResponse('reg', res.status, data);
+      } catch (e) {
+        showResponse('reg', 0, { error: e.message });
+      } finally {
+        showLoading('reg-loading', false);
+      }
+    }
+
+    // --- 2. 재큐잉 ---
+    async function enqueueVideo() {
+      const videoId = document.getElementById('enq-videoId').value;
+      if (!videoId) { alert('videoId를 입력해주세요.'); return; }
+
+      showLoading('enq-loading', true);
+      try {
+        const res = await fetch(`${BASE}/api/cctv/enqueue/${videoId}`, { method: 'POST' });
+        const data = await res.json();
+        showResponse('enq', res.status, data);
+      } catch (e) {
+        showResponse('enq', 0, { error: e.message });
+      } finally {
+        showLoading('enq-loading', false);
+      }
+    }
+
+    // --- 3. 영상 목록 ---
+    async function fetchVideos() {
+      showLoading('vid-loading', true);
+      const tbody = document.getElementById('videos-tbody');
+      try {
+        const res = await fetch(`${BASE}/api/cctv/videos`);
+        const data = await res.json();
+        const list = data.data ?? data;
+        if (!list.length) {
+          tbody.innerHTML = '<tr><td colspan="8"><div class="empty">데이터 없음</div></td></tr>';
+          return;
+        }
+        tbody.innerHTML = list.map(v => `
         <tr>
           <td class="mono">${fmt(v.id)}</td>
           <td class="mono">${fmt(v.room_id)}</td>
@@ -787,82 +1193,132 @@
           <td class="mono">${fmt(v.duration_seconds)}s</td>
           <td class="mono">${v.analyzed_seconds != null ? v.analyzed_seconds + 's' : '—'}</td>
           <td class="mono">${fmtDt(v.started_at)}</td>
+          <td class="mono">${fmtDt(v.estimated_completion_at)}</td>
           <td class="mono">${fmtDt(v.last_updated_at)}</td>
         </tr>
       `).join('');
-    } catch (e) {
-      tbody.innerHTML = `<tr><td colspan="8"><div class="empty" style="color:var(--danger)">${e.message}</div></td></tr>`;
-    } finally {
-      showLoading('vid-loading', false);
-    }
-  }
-
-  // --- 4. 물품 목록 ---
-  async function fetchDetections() {
-    showLoading('det-loading', true);
-    const tbody = document.getElementById('detections-tbody');
-    try {
-      const res = await fetch(`${BASE}/api/cctv/detections`);
-      const data = await res.json();
-      const list = data.data ?? data;
-      if (!list.length) {
-        tbody.innerHTML = '<tr><td colspan="6"><div class="empty">데이터 없음</div></td></tr>';
-        return;
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="9"><div class="empty" style="color:var(--danger)">${e.message}</div></td></tr>`;
+      } finally {
+        showLoading('vid-loading', false);
       }
-      tbody.innerHTML = list.map(d => `
-        <tr>
-          <td class="mono">${fmt(d.id)}</td>
-          <td class="mono">${fmtDt(d.detected_at)}</td>
-          <td class="mono">${fmt(d.detected_category)}</td>
-          <td class="mono">${fmt(d.detected_color)}</td>
-          <td>${statusBadge(d.review_status)}</td>
-          <td>
-            <button class="btn btn-secondary btn-sm" onclick="openDetectionModal(${d.id})">상세 조회</button>
-          </td>
-        </tr>
-      `).join('');
-    } catch (e) {
-      tbody.innerHTML = `<tr><td colspan="6"><div class="empty" style="color:var(--danger)">${e.message}</div></td></tr>`;
-    } finally {
-      showLoading('det-loading', false);
     }
-  }
 
-  // 물품 목록 → 상세 페이지 이동
-  function goToDetectionDetail(id) {
-    document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
-    document.querySelectorAll(".nav-item")[4].classList.add("active");
-    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-    document.getElementById("page-detection-detail").classList.add("active");
-    document.getElementById("det-id").value = id;
-    fetchDetectionById();
-  }
+    // --- 4. 물품 목록 ---
+    async function fetchDetections() {
+      showLoading('det-loading', true);
+      const container = document.getElementById('detections-grouped');
+      container.innerHTML = '';
+      try {
+        const res = await fetch(`${BASE}/api/cctv/detections`);
+        const data = await res.json();
+        const list = data.data ?? data;
+        if (!list.length) {
+          container.innerHTML = '<div class="empty">데이터 없음</div>';
+          return;
+        }
+        // video_id 기준 그룹핑
+        const groups = {};
+        list.forEach(d => {
+          const vid = d.video_id ?? 'unknown';
+          if (!groups[vid]) groups[vid] = [];
+          groups[vid].push(d);
+        });
 
-  // --- 5. 물품 상세 ---
-  async function fetchDetectionById() {
-    const id = document.getElementById('det-id').value;
-    if (!id) { alert('id를 입력해주세요.'); return; }
+        // Video ID 역순(최신순)으로 정렬
+        const sortedVideoIds = Object.keys(groups).sort((a, b) => {
+          if (a === 'unknown') return 1;
+          if (b === 'unknown') return -1;
+          return Number(b) - Number(a);
+        });
 
-    showLoading('detid-loading', true);
-    document.getElementById('detection-detail-content').style.display = 'none';
-    try {
-      const res = await fetch(`${BASE}/api/cctv/detections/${id}`);
-      const data = await res.json();
-      showResponse('detid', res.status, data);
-      if (res.ok && data.data) {
-        renderDetailGrid('detection-detail-grid', data.data);
-        document.getElementById('detection-detail-content').style.display = 'block';
+        sortedVideoIds.forEach(videoId => {
+          const items = groups[videoId];
+          const groupEl = document.createElement('div');
+          groupEl.innerHTML = `
+          <div class="group-header" onclick="toggleGroup(this)">
+            <span class="group-video-id">Video #${videoId}</span>
+            <span class="group-count">${items.length}개 물품</span>
+            <span class="group-arrow">▼</span>
+          </div>
+          <div class="group-body">
+            <table style="width:100%;border-collapse:collapse">
+              <thead>
+                <tr>
+                  <th style="font-family:var(--mono);font-size:11px;color:var(--text-muted);padding:10px 14px;border-bottom:1px solid var(--border);text-align:left">ID</th>
+                  <th style="font-family:var(--mono);font-size:11px;color:var(--text-muted);padding:10px 14px;border-bottom:1px solid var(--border);text-align:left">detected_at</th>
+                  <th style="font-family:var(--mono);font-size:11px;color:var(--text-muted);padding:10px 14px;border-bottom:1px solid var(--border);text-align:left">category</th>
+                  <th style="font-family:var(--mono);font-size:11px;color:var(--text-muted);padding:10px 14px;border-bottom:1px solid var(--border);text-align:left">color</th>
+                  <th style="font-family:var(--mono);font-size:11px;color:var(--text-muted);padding:10px 14px;border-bottom:1px solid var(--border);text-align:left">review_status</th>
+                  <th style="font-family:var(--mono);font-size:11px;color:var(--text-muted);padding:10px 14px;border-bottom:1px solid var(--border);text-align:left">상세</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${items.map((d, i) => `
+                  <tr style="${i === items.length - 1 ? '' : 'border-bottom:1px solid var(--border)'}">
+                    <td class="mono" style="padding:11px 14px;color:var(--text-dim)">${fmt(d.id)}</td>
+                    <td class="mono" style="padding:11px 14px;color:var(--text-dim)">${fmtDt(d.detected_at)}</td>
+                    <td class="mono" style="padding:11px 14px;color:var(--text-dim)">${fmt(d.detected_category)}</td>
+                    <td class="mono" style="padding:11px 14px;color:var(--text-dim)">${fmt(d.detected_color)}</td>
+                    <td style="padding:11px 14px">${statusBadge(d.review_status)}</td>
+                    <td style="padding:11px 14px">
+                      <button class="btn btn-secondary btn-sm" onclick="openDetectionModal(${d.id})">상세 조회</button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+          container.appendChild(groupEl);
+        });
+      } catch (e) {
+        container.innerHTML = `<div class="empty" style="color:var(--danger)">${e.message}</div>`;
+      } finally {
+        showLoading('det-loading', false);
       }
-    } catch (e) {
-      showResponse('detid', 0, { error: e.message });
-    } finally {
-      showLoading('detid-loading', false);
     }
-  }
 
-  function renderDetailGrid(containerId, d) {
-    const container = document.getElementById(containerId);
-    container.innerHTML = `
+    function toggleGroup(header) {
+      header.classList.toggle('open');
+      header.nextElementSibling.classList.toggle('open');
+    }
+
+    // 물품 목록 → 상세 페이지 이동
+    function goToDetectionDetail(id) {
+      document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+      document.querySelectorAll(".nav-item")[4].classList.add("active");
+      document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+      document.getElementById("page-detection-detail").classList.add("active");
+      document.getElementById("det-id").value = id;
+      fetchDetectionById();
+    }
+
+    // --- 5. 물품 상세 ---
+    async function fetchDetectionById() {
+      const id = document.getElementById('det-id').value;
+      if (!id) { alert('id를 입력해주세요.'); return; }
+
+      showLoading('detid-loading', true);
+      document.getElementById('detection-detail-content').style.display = 'none';
+      try {
+        const res = await fetch(`${BASE}/api/cctv/detections/${id}`);
+        const data = await res.json();
+        showResponse('detid', res.status, data);
+        if (res.ok && data.data) {
+          renderDetailGrid('detection-detail-grid', data.data);
+          document.getElementById('detection-detail-content').style.display = 'block';
+        }
+      } catch (e) {
+        showResponse('detid', 0, { error: e.message });
+      } finally {
+        showLoading('detid-loading', false);
+      }
+    }
+
+    function renderDetailGrid(containerId, d) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = `
       <div class="detail-item">
         <div class="detail-label">ID</div>
         <div class="detail-value">${fmt(d.id)}</div>
@@ -901,48 +1357,49 @@
           <div class="snapshot-img-item">
             <div class="detail-label" style="margin-bottom:4px">item_snapshot</div>
             ${d.item_snapshot_url
-              ? `<img src="${BASE}/${d.item_snapshot_url}" alt="item snapshot" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+          ? `<img src="${BASE}/${d.item_snapshot_url}" alt="item snapshot" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
                  <div class="snapshot-no-img" style="display:none">이미지 로드 실패</div>
                  <div class="snapshot-url">${d.item_snapshot_url}</div>`
-              : `<div class="snapshot-no-img">—</div>`}
+          : `<div class="snapshot-no-img">—</div>`}
           </div>
           <div class="snapshot-img-item">
             <div class="detail-label" style="margin-bottom:4px">moment_snapshot</div>
             ${d.moment_snapshot_url
-              ? `<img src="${BASE}/${d.moment_snapshot_url}" alt="moment snapshot" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+          ? `<img src="${BASE}/${d.moment_snapshot_url}" alt="moment snapshot" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
                  <div class="snapshot-no-img" style="display:none">이미지 로드 실패</div>
                  <div class="snapshot-url">${d.moment_snapshot_url}</div>`
-              : `<div class="snapshot-no-img">—</div>`}
+          : `<div class="snapshot-no-img">—</div>`}
           </div>
         </div>
       </div>
     `;
-  }
-
-  // --- Modal ---
-  async function openDetectionModal(id) {
-    document.getElementById('modal-id').textContent = id;
-    document.getElementById('modal-detail-grid').innerHTML = '<div style="font-family:var(--mono);font-size:12px;color:var(--text-muted)">로딩 중...</div>';
-    document.getElementById('modal-overlay').classList.add('show');
-    try {
-      const res = await fetch(`${BASE}/api/cctv/detections/${id}`);
-      const data = await res.json();
-      if (res.ok && data.data) {
-        renderDetailGrid('modal-detail-grid', data.data);
-      } else {
-        document.getElementById('modal-detail-grid').innerHTML = `<div style="color:var(--danger);font-family:var(--mono);font-size:12px">${JSON.stringify(data)}</div>`;
-      }
-    } catch (e) {
-      document.getElementById('modal-detail-grid').innerHTML = `<div style="color:var(--danger);font-family:var(--mono);font-size:12px">${e.message}</div>`;
     }
-  }
 
-  function closeModal(e) {
-    if (e.target === document.getElementById('modal-overlay')) closeModalDirect();
-  }
-  function closeModalDirect() {
-    document.getElementById('modal-overlay').classList.remove('show');
-  }
-</script>
+    // --- Modal ---
+    async function openDetectionModal(id) {
+      document.getElementById('modal-id').textContent = id;
+      document.getElementById('modal-detail-grid').innerHTML = '<div style="font-family:var(--mono);font-size:12px;color:var(--text-muted)">로딩 중...</div>';
+      document.getElementById('modal-overlay').classList.add('show');
+      try {
+        const res = await fetch(`${BASE}/api/cctv/detections/${id}`);
+        const data = await res.json();
+        if (res.ok && data.data) {
+          renderDetailGrid('modal-detail-grid', data.data);
+        } else {
+          document.getElementById('modal-detail-grid').innerHTML = `<div style="color:var(--danger);font-family:var(--mono);font-size:12px">${JSON.stringify(data)}</div>`;
+        }
+      } catch (e) {
+        document.getElementById('modal-detail-grid').innerHTML = `<div style="color:var(--danger);font-family:var(--mono);font-size:12px">${e.message}</div>`;
+      }
+    }
+
+    function closeModal(e) {
+      if (e.target === document.getElementById('modal-overlay')) closeModalDirect();
+    }
+    function closeModalDirect() {
+      document.getElementById('modal-overlay').classList.remove('show');
+    }
+  </script>
 </body>
+
 </html>
