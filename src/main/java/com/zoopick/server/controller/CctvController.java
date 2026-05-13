@@ -33,13 +33,13 @@ public class CctvController {
             """
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "등록 + 큐 등록 성공"),
+            @ApiResponse(responseCode = "202", description = "등록 + 큐 등록 성공"),
             @ApiResponse(responseCode = "400", description = "잘못된 요청 (room_id 없음, video_url 형식 오류 등)"),
     })
     @PostMapping("/videos")
-    public ResponseEntity<CctvVideoCreateResponse> createVideoAndEnqueue(@Valid @RequestBody CctvVideoCreateRequest request) {
+    public ResponseEntity<CommonResponse<CctvVideoCreateResponse>> createVideoAndEnqueue(@Valid @RequestBody CctvVideoCreateRequest request) {
         CctvVideoCreateResponse response = cctvService.createVideoAndEnqueue(request);
-        return ResponseEntity.accepted().body(response);
+        return ResponseEntity.accepted().body(CommonResponse.success(response));
     }
 
     @Operation(
@@ -51,13 +51,13 @@ public class CctvController {
             """
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "재큐잉 성공"),
+            @ApiResponse(responseCode = "202", description = "재큐잉 성공"),
             @ApiResponse(responseCode = "404", description = "영상을 찾을 수 없음"),
     })
     @PostMapping("/enqueue/{videoId}")
-    public ResponseEntity<CctvEnqueueResponse> enqueueVideo(@PathVariable Long videoId) {
+    public ResponseEntity<CommonResponse<CctvEnqueueResponse>> enqueueVideo(@PathVariable Long videoId) {
         CctvEnqueueResponse response = cctvService.enqueueVideo(videoId);
-        return ResponseEntity.accepted().body(response);
+        return ResponseEntity.accepted().body(CommonResponse.success(response));
     }
 
     @Operation(
