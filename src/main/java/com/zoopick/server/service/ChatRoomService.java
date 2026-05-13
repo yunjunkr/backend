@@ -5,10 +5,8 @@ import com.zoopick.server.entity.*;
 import com.zoopick.server.exception.BadRequestException;
 import com.zoopick.server.mapper.ChatMessageMapper;
 import com.zoopick.server.mapper.ChatRoomMapper;
-import com.zoopick.server.repository.ChatMessageRepository;
-import com.zoopick.server.repository.ChatRoomRepository;
-import com.zoopick.server.repository.ItemRepository;
-import com.zoopick.server.repository.UserRepository;
+import com.zoopick.server.mapper.notification.NotificationPayloadMapper;
+import com.zoopick.server.repository.*;
 import com.zoopick.server.service.notification.NotificationService;
 import com.zoopick.server.service.notification.SendNotificationCommand;
 import com.zoopick.server.service.notification.payload.ChatMessagePayload;
@@ -34,6 +32,8 @@ public class ChatRoomService {
     private final NotificationService notificationService;
     private final ChatMessageMapper chatMessageMapper;
     private final ChatRoomMapper chatRoomMapper;
+    private final NotificationRepository notificationRepository;
+    private final NotificationPayloadMapper notificationPayloadMapper;
 
     @Transactional
     public CreateChatRoomResult createChatRoom(long requesterId, CreateChatRoomRequest createChatRoomRequest) {
@@ -204,6 +204,17 @@ public class ChatRoomService {
         if (finder.getId().equals(sender.getId()))
             return owner;
         return finder;
+    }
+
+    public void readChatMessages(long userId, long chatRoomId) {
+        User user = userRepository.findByIdOrThrow(userId);
+        ChatRoom chatRoom = chatRoomRepository.findByIdOrThrow(chatRoomId);
+        verifyParticipant(chatRoom, user);
+
+        List<ChatMessage> messages = chatMessageRepository.findByRoomAndSenderIsNot(chatRoom, user);
+        messages.forEach(message -> message.setReadAt(LocalDateTime.now()));
+        chatMessageRepository.saveAll(messages);
+        notificationService.markAllChatsAsRead(userId, chatRoomId);
     }
 
     @Transactional

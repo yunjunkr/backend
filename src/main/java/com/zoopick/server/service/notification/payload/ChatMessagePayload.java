@@ -5,28 +5,28 @@ import com.zoopick.server.entity.ChatRoom;
 import com.zoopick.server.entity.NotificationType;
 import com.zoopick.server.entity.User;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
 import org.jspecify.annotations.NullMarked;
 
 import java.util.Map;
 
-@AllArgsConstructor
 @NullMarked
 @Schema(
         name = "ChatMessagePayload",
         description = "CHAT_MESSAGE : 채팅 메시지 알림 payload"
 )
-public class ChatMessagePayload implements NotificationPayload {
-    @JsonProperty("room_id")
-    @Schema(description = "채팅방 ID", example = "123")
-    private final long roomId;
-    @JsonProperty("sender_nickname")
-    @Schema(description = "보낸 사람 닉네임", example = "zoopickUser")
-    private final String senderNickname;
-    @JsonProperty("message")
-    @Schema(description = "메시지 내용", example = "물건 찾으셨나요?")
-    private final String message;
+public record ChatMessagePayload(
+        @JsonProperty("room_id")
+        @Schema(description = "채팅방 ID", example = "123")
+        long roomId,
 
+        @JsonProperty("sender_nickname")
+        @Schema(description = "보낸 사람 닉네임", example = "zoopickUser")
+        String senderNickname,
+
+        @JsonProperty("message")
+        @Schema(description = "메시지 내용", example = "물건 찾으셨나요?")
+        String message
+) implements NotificationPayload {
     public static ChatMessagePayload of(ChatRoom chatRoom, User sender, String message) {
         return new ChatMessagePayload(chatRoom.getId(), sender.getNickname(), message);
     }

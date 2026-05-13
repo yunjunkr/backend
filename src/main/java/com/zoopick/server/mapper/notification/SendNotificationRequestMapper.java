@@ -1,31 +1,20 @@
 package com.zoopick.server.mapper.notification;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zoopick.server.dto.notification.SendNotificationRequest;
 import com.zoopick.server.entity.NotificationType;
 import com.zoopick.server.exception.BadRequestException;
 import com.zoopick.server.exception.InternalServerException;
 import com.zoopick.server.service.notification.SendNotificationCommand;
-import com.zoopick.server.service.notification.payload.*;
+import com.zoopick.server.service.notification.payload.NotificationPayload;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.stereotype.Component;
-
-import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
 @NullMarked
 public class SendNotificationRequestMapper {
-    private final Map<NotificationType, Class<? extends NotificationPayload>> payloadTypes = Map.of(
-            NotificationType.CHAT_MESSAGE, ChatMessagePayload.class,
-            NotificationType.ITEM_RETURNED, ItemReturnedPayload.class,
-            NotificationType.LOCKER_READY, LockerReadyPayload.class,
-            NotificationType.THEFT_SUSPECTED, TheftSuspectedPayload.class,
-            NotificationType.MATCH_FOUND, MatchFoundPayload.class
-    );
-
-    private final ObjectMapper objectMapper;
+    private final NotificationPayloadMapper notificationPayloadMapper;
 
     /**
      * {@linkplain SendNotificationRequest}를 {@linkplain SendNotificationCommand}로 변환합니다.
@@ -38,10 +27,7 @@ public class SendNotificationRequestMapper {
     public SendNotificationCommand toCommand(SendNotificationRequest request) {
         try {
             NotificationType type = request.getType();
-            if (!payloadTypes.containsKey(type))
-                throw new UnsupportedOperationException("Unsupported notification type : " + type);
-            Class<? extends NotificationPayload> payloadType = payloadTypes.get(type);
-            NotificationPayload payload = objectMapper.convertValue(request.getPayload(), payloadType);
+            NotificationPayload payload = notificationPayloadMapper.toNotificationPayload(request.getPayload(), type);
             return new SendNotificationCommand(request.getTitle(), request.getBody(), payload);
         } catch (IllegalArgumentException exception) {
             throw new BadRequestException("잘못된 요청입니다.", request.getPayload() + " is not readable");

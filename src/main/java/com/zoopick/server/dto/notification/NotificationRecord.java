@@ -8,7 +8,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 
 /**
  * 알림 하나의 데이터
@@ -33,7 +32,7 @@ public class NotificationRecord {
                     LockerReadyPayload.class
             }
     )
-    private Map<String, Object> payload;
+    private NotificationPayload payload;
 
     @JsonProperty("read_at")
     @Schema(description = "읽음 시각", example = "2026-05-09T14:30:00")

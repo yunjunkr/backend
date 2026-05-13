@@ -1,5 +1,6 @@
 package com.zoopick.server.repository;
 
+import com.zoopick.server.entity.NotificationType;
 import com.zoopick.server.entity.ZoopickNotification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -13,4 +14,6 @@ public interface NotificationRepository extends JpaRepository<ZoopickNotificatio
     List<ZoopickNotification> findByUserIdAndReadAtIsNullOrderByCreatedAtDesc(Long userId);
 
     long countByUserIdAndReadAtIsNull(Long userId);
+
+    List<ZoopickNotification> findAllByUserIdAndType(Long userId, NotificationType type);
 }
