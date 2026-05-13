@@ -6,7 +6,7 @@ import com.zoopick.server.exception.DataNotFoundException;
 import com.zoopick.server.exception.InternalServerException;
 import com.zoopick.server.service.ChatRoomService;
 import com.zoopick.server.websocket.message.ChatErrorPayload;
-import com.zoopick.server.websocket.message.ChatMessageRequest;
+import com.zoopick.server.websocket.message.ChatRequestMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NullMarked;
@@ -45,14 +45,16 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) {
         try {
-            ChatMessageRequest request = objectMapper.readValue(message.getPayload(), ChatMessageRequest.class);
+            ChatRequestMessage request = objectMapper.readValue(message.getPayload(), ChatRequestMessage.class);
             if (!validateChatRoomAccess(session, request))
                 return;
 
             if (!webSocketSessionManager.getSessionsByRoom(request.roomId()).contains(session))
                 webSocketSessionManager.join(request.roomId(), session);
-            if (request.type() == ChatMessageRequest.Type.MESSAGE)
-                chatWebSocketBroadcaster.broadcast(request.roomId(), session, request.message());
+            if (request.type() == ChatRequestMessage.Type.MESSAGE)
+                chatWebSocketBroadcaster.broadcastChat(request.roomId(), session, request.message());
+            if (request.type() == ChatRequestMessage.Type.READ)
+                chatWebSocketBroadcaster.broadcastRead(request.roomId(), session);
         } catch (InternalServerException exception) {
             chatEventSender.sendErrorSafely(session, ChatErrorPayload.Reason.INTERNAL_SERVER_ERROR, exception.getClientMessage());
             log.error("Failed to handle websocket message. sessionId={}", session.getId(), exception);
@@ -67,7 +69,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         }
     }
 
-    private boolean validateChatRoomAccess(WebSocketSession session, ChatMessageRequest request) {
+    private boolean validateChatRoomAccess(WebSocketSession session, ChatRequestMessage request) {
         long userId = WebSocketSessionUtils.getUserId(session);
         if (!chatRoomService.getParticipants(request.roomId()).contains(userId)) {
             chatEventSender.sendErrorSafely(session, ChatErrorPayload.Reason.NOT_PERMITTED, "채팅방에 참여할 수 없습니다.");

@@ -8,6 +8,7 @@ public record ChatEventMessage(Type type, ChatEventPayload payload) {
     public enum Type {
         INFO,
         ERROR,
-        MESSAGE
+        MESSAGE,
+        READ
     }
 }

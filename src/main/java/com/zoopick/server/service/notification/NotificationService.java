@@ -4,15 +4,18 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zoopick.server.dto.notification.ChangeReadStatusResult;
 import com.zoopick.server.dto.notification.NotificationRecord;
+import com.zoopick.server.entity.NotificationType;
 import com.zoopick.server.entity.User;
 import com.zoopick.server.entity.ZoopickNotification;
 import com.zoopick.server.exception.BadRequestException;
 import com.zoopick.server.exception.DataNotFoundException;
 import com.zoopick.server.mapper.notification.NotificationMapper;
+import com.zoopick.server.mapper.notification.NotificationPayloadMapper;
 import com.zoopick.server.repository.NotificationRepository;
 import com.zoopick.server.repository.UserRepository;
 import com.zoopick.server.service.notification.event.FcmMessageRequest;
 import com.zoopick.server.service.notification.event.NotificationDispatchRequestedEvent;
+import com.zoopick.server.service.notification.payload.ChatMessagePayload;
 import com.zoopick.server.service.notification.payload.NotificationPayload;
 import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +38,7 @@ public class NotificationService {
     private final NotificationMapper notificationMapper;
     private final ObjectMapper objectMapper;
     private final ApplicationEventPublisher eventPublisher;
+    private final NotificationPayloadMapper notificationPayloadMapper;
 
     public void register(long userId, String fcmToken) {
         User user = userRepository.findByIdOrThrow(userId);
@@ -61,8 +65,7 @@ public class NotificationService {
     }
 
     @Transactional
-    public String broadcast(SendNotificationCommand command) {
-        List<User> users = userRepository.findAll();
+    public String send(List<User> users, SendNotificationCommand command) {
         List<ZoopickNotification> zoopickNotifications = users.stream()
                 .map(user -> notificationMapper.toZoopickNotification(user, command))
                 .toList();
@@ -78,6 +81,12 @@ public class NotificationService {
                 .toList();
         eventPublisher.publishEvent(new NotificationDispatchRequestedEvent(messages));
         return String.valueOf(messages.size());
+    }
+
+    @Transactional
+    public String broadcast(SendNotificationCommand command) {
+        List<User> users = userRepository.findAll();
+        return send(users, command);
     }
 
     public void storeNotification(long userId, NotificationPayload payload) {
@@ -108,6 +117,22 @@ public class NotificationService {
 
     public List<NotificationRecord> getUnreadNotifications(long userId) {
         return findNotificationsWith(userId, notificationRepository::findByUserIdAndReadAtIsNullOrderByCreatedAtDesc);
+    }
+
+    @Transactional
+    public void markAllChatsAsRead(long userId, long roomId) {
+        List<ZoopickNotification> notifications = notificationRepository.findAllByUserIdAndType(userId, NotificationType.CHAT_MESSAGE);
+        for (ZoopickNotification notification : notifications) {
+            if (notificationFromChatRoom(notification, roomId)) {
+                notification.setReadAt(LocalDateTime.now());
+            }
+        }
+        notificationRepository.saveAll(notifications);
+    }
+
+    private boolean notificationFromChatRoom(ZoopickNotification notification, long roomId) {
+        ChatMessagePayload payload = notificationPayloadMapper.toNotificationPayload(notification.getPayload(), ChatMessagePayload.class);
+        return payload.roomId() == roomId;
     }
 
     private List<NotificationRecord> findNotificationsWith(long userId, Function<Long, List<ZoopickNotification>> repositoryAccessor) {

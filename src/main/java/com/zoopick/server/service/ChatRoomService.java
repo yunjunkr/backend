@@ -207,6 +207,18 @@ public class ChatRoomService {
     }
 
     @Transactional
+    public void readChatMessages(long userId, long chatRoomId) {
+        User user = userRepository.findByIdOrThrow(userId);
+        ChatRoom chatRoom = chatRoomRepository.findByIdOrThrow(chatRoomId);
+        verifyParticipant(chatRoom, user);
+
+        List<ChatMessage> messages = chatMessageRepository.findByRoomAndSenderIsNot(chatRoom, user);
+        messages.forEach(message -> message.setReadAt(LocalDateTime.now()));
+        chatMessageRepository.saveAll(messages);
+        notificationService.markAllChatsAsRead(userId, chatRoomId);
+    }
+
+    @Transactional
     public void closeChatRoom(long userId, long chatRoomId, ChatRoomCloseReason reason) {
         User sender = userRepository.findByIdOrThrow(userId);
         ChatRoom chatRoom = chatRoomRepository.findByIdOrThrow(chatRoomId);
