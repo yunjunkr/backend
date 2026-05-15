@@ -19,9 +19,9 @@ public enum Role {
 
     Role(Role... childRoles) {
         authorities = new HashSet<>();
-        authorities.add(new SimpleGrantedAuthority(PREFIX + getRoleName()));
+        authorities.add(new SimpleGrantedAuthority(getRoleName()));
         for (Role childRole : childRoles)
-            authorities.add(new SimpleGrantedAuthority(PREFIX + childRole.getRoleName()));
+            authorities.add(new SimpleGrantedAuthority(childRole.getRoleName()));
     }
 
     public String getRoleName() {

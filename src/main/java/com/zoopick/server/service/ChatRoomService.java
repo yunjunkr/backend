@@ -154,7 +154,7 @@ public class ChatRoomService {
         ChatRoom chatRoom = chatRoomRepository.findByIdOrThrow(chatRoomId);
         verifyParticipant(chatRoom, user);
 
-        List<ChatMessage> messages = chatMessageRepository.findAll(ChatMessageRepository.applyFilter(filter));
+        List<ChatMessage> messages = chatMessageRepository.findByRoomOrderBySentAt(chatRoom, ChatMessageRepository.applyFilter(filter));
         List<MessageRecord> messageRecords = messages.stream()
                 .map(chatMessageMapper::toMessageRecord)
                 .toList();

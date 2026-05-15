@@ -1,6 +1,5 @@
 package com.zoopick.server.controller;
 
-import com.google.firebase.messaging.FirebaseMessagingException;
 import com.zoopick.server.dto.CommonResponse;
 import com.zoopick.server.dto.notification.*;
 import com.zoopick.server.mapper.notification.SendNotificationRequestMapper;
@@ -53,7 +52,7 @@ public class NotificationController {
     public ResponseEntity<CommonResponse<String>> sendNotification(
             @PathVariable long userId,
             @RequestBody @Valid SendNotificationRequest request
-    ) throws FirebaseMessagingException {
+    ) {
         String result = notificationService.send(userId, sendNotificationRequestMapper.toCommand(request));
         return ResponseEntity.ok(CommonResponse.success(result));
     }
@@ -67,7 +66,7 @@ public class NotificationController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CommonResponse<String>> broadcastNotification(
             @RequestBody @Valid SendNotificationRequest request
-    ) throws FirebaseMessagingException {
+    ) {
         String result = notificationService.broadcast(sendNotificationRequestMapper.toCommand(request));
         return ResponseEntity.ok(CommonResponse.success(result));
     }
