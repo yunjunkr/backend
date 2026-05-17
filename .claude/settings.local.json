@@ -5,7 +5,12 @@
       "Bash(grep -E \"\\\\.\\(yml|yaml|properties|java\\)$\")",
       "Bash(xargs grep -l \"LockerReady\\\\|LockerPayload\")",
       "Bash(xargs grep -l \"qr\\\\|QR\\\\|barcode\\\\|code.*generate\")",
-      "Bash(xargs grep -l \"Locker\")"
+      "Bash(xargs grep -l \"Locker\")",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\robot\\\\capstone2026\\\\zoopick-backend\" -Directory)",
+      "Bash(Select-Object Name)",
+      "Bash(.\\\\mvnw.cmd test *)",
+      "PowerShell(.\\\\mvnw.cmd test \"-Dtest=CctvServiceTest,CctvMatchServiceTest,CreateCctvMatchEventListnerTest,SaveCctvDetectionListnerTest\" 2>&1 | Select-Object -Last 60)",
+      "PowerShell(.\\\\mvnw.cmd test \"-Dtest=CctvServiceTest,CctvMatchServiceTest,CreateCctvMatchEventListnerTest,SaveCctvDetectionListnerTest\" 2>&1 | Select-Object -Last 30)"
     ]
   }
 }
