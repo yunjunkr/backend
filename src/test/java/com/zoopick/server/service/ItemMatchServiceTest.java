@@ -5,6 +5,7 @@ import com.zoopick.server.dto.match.*;
 import com.zoopick.server.entity.*;
 import com.zoopick.server.exception.BadRequestException;
 import com.zoopick.server.repository.ItemMatchRepository;
+import com.zoopick.server.repository.ItemPostRepository;
 import com.zoopick.server.repository.ItemRepository;
 import com.zoopick.server.repository.LockerRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,6 +36,8 @@ class ItemMatchServiceTest {
     private ItemMatchRepository itemMatchRepository;
     @Mock
     private LockerRepository lockerRepository;
+    @Mock
+    private ItemPostRepository itemPostRepository;
     @Mock
     private ApplicationEventPublisher eventPublisher;
     @Mock
@@ -98,6 +101,13 @@ class ItemMatchServiceTest {
         )).thenReturn(List.of(projectionMock));
 
         when(itemRepository.findAllById(anyList())).thenReturn(List.of(foundItem));
+
+        ItemPost mockItemPost = ItemPost.builder()
+                .id(1000L)
+                .title("테스트 게시글 제목")
+                .build();
+        when(itemPostRepository.findByItem(any(Item.class))).thenReturn(mockItemPost);
+
         when(itemMatchRepository.existsByLostItemAndFoundItem(lostItem, foundItem)).thenReturn(false);
         when(itemMatchRepository.save(any(ItemMatch.class))).thenReturn(itemMatch);
 
@@ -108,7 +118,6 @@ class ItemMatchServiceTest {
         verify(itemMatchRepository, times(1)).save(any(ItemMatch.class));
         verify(eventPublisher, times(1)).publishEvent(any(CreateMatchEvent.class));
     }
-
     @Test
     @DisplayName("자동 매칭 생성 - 유사 아이템이 없는 경우 그대로 종료")
     void createMatch_noSimilarItems() {
