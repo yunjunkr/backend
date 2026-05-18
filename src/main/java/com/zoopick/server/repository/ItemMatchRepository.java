@@ -89,6 +89,11 @@ public interface ItemMatchRepository extends JpaRepository<ItemMatch, Long> {
                                 @Param("lostItemId") Long lostItemId,
                                 @Param("foundItemId") Long foundItemId);
 
+    // 알림 발송 후 매칭 상태를 NOTIFIED로 일괄 갱신
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE ItemMatch m SET m.status = :status WHERE m.id IN :ids")
+    void updateStatusInBatch(@Param("ids") List<Long> ids, @Param("status") MatchStatus status);
+
     // CONFIRMED된 매칭이 있는지 확인
     boolean existsByLostItemAndStatus(Item lostItem, MatchStatus status);
 

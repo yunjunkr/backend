@@ -5,6 +5,7 @@ import com.zoopick.server.dto.match.*;
 import com.zoopick.server.entity.*;
 import com.zoopick.server.exception.BadRequestException;
 import com.zoopick.server.repository.ItemMatchRepository;
+import com.zoopick.server.repository.ItemPostRepository;
 import com.zoopick.server.repository.ItemRepository;
 import com.zoopick.server.repository.LockerRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +15,9 @@ import org.springframework.data.domain.Vector;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -25,6 +28,7 @@ import java.util.stream.Collectors;
 public class ItemMatchService {
     private final ItemRepository itemRepository;
     private final ItemMatchRepository itemMatchRepository;
+    private final ItemPostRepository itemPostRepository;
     private final LockerRepository lockerRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final MatchConfig matchConfig;
@@ -65,6 +69,9 @@ public class ItemMatchService {
                 .limit(5)
                 .toList();
 
+        List<CreateMatchEvent.Entry> entries = new ArrayList<>();
+        Map<Long, String> titleCache = new HashMap<>();
+
         for (SimilarItemResult s : top5) {
             Item foundItemInDb = itemMap.get(s.getItemId());
             // 게시글에 올라온 아이템이 LOST라면 lostItem에, FOUND라면 foundItem에
@@ -80,8 +87,21 @@ public class ItemMatchService {
                         .status(MatchStatus.CANDIDATE)
                         .build());
                 log.info("매칭된 아이템 ID: {}", foundItemInDb.getId());
-                eventPublisher.publishEvent(new CreateMatchEvent(savedMatch, lostItem, foundItem));
+
+                String title = titleCache.computeIfAbsent(lostItem.getId(),
+                        id -> itemPostRepository.findByItem(lostItem).getTitle());
+                entries.add(new CreateMatchEvent.Entry(
+                        savedMatch.getId(),
+                        savedMatch.getScore(),
+                        lostItem.getId(),
+                        lostItem.getReporter().getId(),
+                        title,
+                        foundItem.getLocationName()));
             }
+        }
+
+        if (!entries.isEmpty()) {
+            eventPublisher.publishEvent(new CreateMatchEvent(entries));
         }
         log.info("매칭 종료 ID: {}", targetItem.getId());
     }

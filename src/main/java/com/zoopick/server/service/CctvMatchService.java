@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -67,6 +68,7 @@ public class CctvMatchService {
                         post -> post));
 
         Room detectionRoom = cctvDetection.getCctvVideo().getRoom();
+        List<CreateCctvMatchEvent.Entry> entries = new ArrayList<>();
 
         for (SimilarItemResult s : similarItems) {
             ItemPost itemPost = itemPostMap.get(s.getItemId());
@@ -93,9 +95,18 @@ public class CctvMatchService {
                         .cctvDetection(cctvDetection)
                         .build());
                 log.info("CCTV 매칭된 아이템 ID: {}", lostItem.getId());
-                Room room = cctvDetection.getCctvVideo().getRoom();
-                eventPublisher.publishEvent(new CreateCctvMatchEvent(lostItem, savedMatch, cctvDetection, itemPost, room));
+                entries.add(new CreateCctvMatchEvent.Entry(
+                        savedMatch.getId(),
+                        savedMatch.getScore(),
+                        lostItem.getId(),
+                        lostItem.getReporter().getId(),
+                        itemPost.getTitle(),
+                        detectionRoom.getName()));
             }
+        }
+
+        if (!entries.isEmpty()) {
+            eventPublisher.publishEvent(new CreateCctvMatchEvent(entries));
         }
         log.info("[CCTV] 매칭 종료 ID: {}", detectionId);
     }
@@ -134,6 +145,8 @@ public class CctvMatchService {
                 .stream()
                 .collect(Collectors.toMap(CctvDetection::getId, i -> i));
 
+        List<CreateCctvMatchEvent.Entry> entries = new ArrayList<>();
+
         for (SimilarItemResult s : similarItems) {
             CctvDetection foundItemInDb = detectionMap.get(s.getItemId());
             if (foundItemInDb == null)
@@ -148,9 +161,18 @@ public class CctvMatchService {
                         .build());
                 log.info("[CCTV] 매칭된 Detection ID: {}", foundItemInDb.getId());
                 Room foundRoom = foundItemInDb.getCctvVideo().getRoom();
-                eventPublisher
-                        .publishEvent(new CreateCctvMatchEvent(lostItem, savedMatch, foundItemInDb, lostItemPost, foundRoom));
+                entries.add(new CreateCctvMatchEvent.Entry(
+                        savedMatch.getId(),
+                        savedMatch.getScore(),
+                        lostItem.getId(),
+                        lostItem.getReporter().getId(),
+                        lostItemPost.getTitle(),
+                        foundRoom.getName()));
             }
+        }
+
+        if (!entries.isEmpty()) {
+            eventPublisher.publishEvent(new CreateCctvMatchEvent(entries));
         }
         log.info("[CCTV] 매칭 종료 ID: {}", lostItemId);
     }

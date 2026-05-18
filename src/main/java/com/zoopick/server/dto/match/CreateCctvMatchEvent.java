@@ -1,10 +1,23 @@
 package com.zoopick.server.dto.match;
 
-import com.zoopick.server.entity.CctvDetection;
-import com.zoopick.server.entity.CctvDetectionMatch;
-import com.zoopick.server.entity.Item;
-import com.zoopick.server.entity.ItemPost;
-import com.zoopick.server.entity.Room;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-public record CreateCctvMatchEvent(Item item, CctvDetectionMatch cctvDetectionMatch, CctvDetection cctvDetection, ItemPost itemPost, Room room) {
+import java.util.List;
+
+@Getter
+@AllArgsConstructor
+public class CreateCctvMatchEvent {
+    private final List<Entry> entries;
+
+    @Getter
+    @AllArgsConstructor
+    public static class Entry {
+        private final long matchId;
+        private final float score;
+        private final long lostItemId;
+        private final long reporterUserId;
+        private final String itemPostTitle;
+        private final String roomName;
+    }
 }
